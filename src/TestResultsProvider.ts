@@ -35,27 +35,6 @@ export class TestResultsProvider implements vscode.TreeDataProvider<SingleTestOu
         if (element && element instanceof SingleTestOutputTreeItem) {
             return Promise.resolve([]);
         }
-        // let testOutputSet: TestOutputSet|null = null;
-
-        // if (element) {
-        //     if (element.testOutputSet) {
-        //         testOutputSet = element.testOutputSet;
-        //     }
-        // } else {
-        //     if (!this.outputHandler.testOutputSet.isLeaf) {
-        //         testOutputSet = this.outputHandler.testOutputSet;
-        //     } 
-        // }
-        // const children: TestResultItem[] = [];
-        // if (testOutputSet) {
-        //     for (let subset of testOutputSet.subsets.values()) {
-        //         children.push(new TestResultItem(subset, null));
-        //     }
-        //     for (let singleTestOutput of testOutputSet.outputs.values()) {
-        //         children.push(new TestResultItem(null, singleTestOutput));
-        //     }
-        // }
-        // return Promise.resolve(children);
 
         let testOutputSet = this.outputHandler.testOutputSet;
         if (element) {
@@ -92,18 +71,9 @@ export class TestOutputSetTreeItem extends vscode.TreeItem {
         }
     }
 
-    // get tooltip(): string {
-    //     return `${this.label} Tooltip`;
-    // }
-    
     get description(): string {
         return `${this.testOutputSet.failedTestCount} / ${this.testOutputSet.testCount} failed`
     }
-
-    // iconPath = {
-    //   light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-    //   dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
-    // };
 }
 
 export class SingleTestOutputTreeItem extends vscode.TreeItem {
@@ -121,10 +91,6 @@ export class SingleTestOutputTreeItem extends vscode.TreeItem {
         }
     }
 
-    // get tooltip(): string {
-    //     return `${this.label} Tooltip`;
-    // }
-    
     get description(): string {
         if (this.singleTestOutput.isFailure) {
             return 'FAILED'
