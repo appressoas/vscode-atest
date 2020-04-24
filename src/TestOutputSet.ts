@@ -6,6 +6,28 @@ export type TSingleTestOutput = {
     // Absolute filestystem path
     fsPath: string,
 
+    // The relative filesystem path of the file.
+    // E.g.: The path relative to the CWD when the test runner ran the test.
+    // Used when re-running tests.
+    relativeFsPath: string,
+
+    // The name of the test suite. Used when re-running tests,
+    // and the format is highly language and test-runner dependent.
+    // Typically the code path to the test suite class/module.
+    testSuiteName?: string,
+
+    // The name of the test case. Used when re-running tests,
+    // and the format is highly language and test-runner dependent.
+    // Typically the code path to the test case class, or the relative code
+    // path from the ``testSuiteName``.
+    testCaseName?: string,
+
+    // The name of the test. Used when re-running tests,
+    // and the format is highly language and test-runner dependent.
+    // Typically the code path to the test case function/method, or the relative code
+    // path from the ``testCaseName``.
+    testName?: string,
+
     line: number,
     failureMessage: string|null
 }

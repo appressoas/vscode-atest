@@ -18,7 +18,7 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
         return output.join('\n\n#####################################\n\n')
     }
 
-    addTestCaseElement (testcaseElement: any) {
+    addTestCaseElement (testSuiteName: string|undefined, testcaseElement: any) {
         const attributes = testcaseElement.$
         if (!attributes.classname) {
             throw new Error(`Invalid xUnit: <testcase> element ${JSON.stringify(testcaseElement)} does not have a "classname" attribute.`)
@@ -44,15 +44,20 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
         this.testOutputSet.add(new SingleTestOutput({
             codePath: codePath,
             fsPath: this.workspaceFolderHelper.absoluteFsPath(attributes.file),
+            relativeFsPath: attributes.file,
             line: parseInt(attributes.line, 10),
-            failureMessage: failureMessage
+            failureMessage: failureMessage,
+            testSuiteName: testSuiteName,
+            testCaseName: attributes.classname,
+            testName: attributes.name
         }));
     }
 
     addTestSuiteElement (testsuiteElement: any) {
         const testcaseElements = testsuiteElement.testcase || [];
+        const testSuiteName = testsuiteElement.$?.name;
         for (let testcaseElement of testcaseElements) {
-            this.addTestCaseElement(testcaseElement);
+            this.addTestCaseElement(testSuiteName, testcaseElement);
         }
     }
 
