@@ -1,8 +1,9 @@
-import AbstractRunner, { TExecutable } from "./AbstractRunner";
+import AbstractRunner from "./AbstractRunner";
 import * as vscode from 'vscode';
 import AbstractOutputHandler from "../outputhandlers/AbstractOutputHandler";
 import DumbLogOutputHandler from "../outputhandlers/DumbLogOutputHandler";
 import WorkspaceFolderSettings from "../WorkspaceFolderSettings";
+import { TExecutable } from "../types";
 
 
 // https://code.visualstudio.com/docs/editor/variables-reference

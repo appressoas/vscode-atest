@@ -3,17 +3,7 @@ import * as child_process from 'child_process';
 import AbstractOutputHandler from "../outputhandlers/AbstractOutputHandler";
 import WorkspaceFolderHelper from '../WorkspaceFolderHelper';
 import { TestResultsProvider } from '../TestResultsProvider';
-
-export type TExecutable = {
-    command: string;
-    args: Array<string>;
-    env?: {[key: string]: string};
-}
-
-export type TRunnerOptions = {
-    fileToRunTestsIn?: string|undefined;
-    folderToRunTestsIn?: string|undefined;
-}
+import { TExecutable, TRunnerOptions } from '../types';
 
 export class RunnerError extends Error {
     constructor(public runner: AbstractRunner, public error: Error|null = null) {

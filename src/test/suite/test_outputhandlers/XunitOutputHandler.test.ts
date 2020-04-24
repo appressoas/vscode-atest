@@ -61,7 +61,7 @@ suite('XunitOutputHandler Test Suite', () => {
 			assert.equal(failedOutput?.name, 'test_will_fail')
 			assert(failedOutput?.isFailure)
 			assert.equal(failedOutput?.output.line, 10)
-			assert.equal(failedOutput?.output.fsPath, 'test_stringutils/test_replace.py')
+			assert.equal(failedOutput?.output.fileFsPath, 'test_stringutils/test_replace.py')
 		});
 	});
 });

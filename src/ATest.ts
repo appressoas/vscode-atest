@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import GenericRunner from './runners/GenericRunner';
 import PyTestRunner from './runners/PyTestRunner';
-import AbstractRunner, { TRunnerOptions } from './runners/AbstractRunner';
+import AbstractRunner from './runners/AbstractRunner';
 import WorkspaceFolderSettings from './WorkspaceFolderSettings';
 import { TestResultsProvider, SingleTestOutputTreeItem, TestOutputSetTreeItem } from './TestResultsProvider';
+import { TRunnerOptions } from './types';
 
 export default class ATest {
     testResultsProvider: TestResultsProvider;
@@ -47,7 +48,7 @@ export default class ATest {
         //         console.log('DONE');
         //     });
         // }
-        this.getRunner(currentFileWorkspaceFolder, {fileToRunTestsIn: currentFileUri.fsPath}).run()
+        this.getRunner(currentFileWorkspaceFolder, {fileFsPath: currentFileUri.fsPath}).run()
         .then(() => {
         });
     }
@@ -58,7 +59,7 @@ export default class ATest {
         if (!currentFileWorkspaceFolder) {
             return;
         }
-        this.getRunner(currentFileWorkspaceFolder, {folderToRunTestsIn: folderUri.fsPath}).run()
+        this.getRunner(currentFileWorkspaceFolder, {folderFsPath: folderUri.fsPath}).run()
         .then(() => {
         });
     }
@@ -69,7 +70,7 @@ export default class ATest {
         if (!currentFileWorkspaceFolder) {
             return;
         }
-        this.getRunner(currentFileWorkspaceFolder, {fileToRunTestsIn: fileUri.fsPath}).run()
+        this.getRunner(currentFileWorkspaceFolder, {fileFsPath: fileUri.fsPath}).run()
         .then(() => {
         });
     }

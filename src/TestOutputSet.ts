@@ -1,36 +1,5 @@
 import * as vscode from 'vscode';
-
-export type TSingleTestOutput = {
-    codePath: Array<string>,
-
-    // Absolute filestystem path
-    fsPath: string,
-
-    // The relative filesystem path of the file.
-    // E.g.: The path relative to the CWD when the test runner ran the test.
-    // Used when re-running tests.
-    relativeFsPath: string,
-
-    // The name of the test suite. Used when re-running tests,
-    // and the format is highly language and test-runner dependent.
-    // Typically the code path to the test suite class/module.
-    testSuiteName?: string,
-
-    // The name of the test case. Used when re-running tests,
-    // and the format is highly language and test-runner dependent.
-    // Typically the code path to the test case class, or the relative code
-    // path from the ``testSuiteName``.
-    testCaseName?: string,
-
-    // The name of the test. Used when re-running tests,
-    // and the format is highly language and test-runner dependent.
-    // Typically the code path to the test case function/method, or the relative code
-    // path from the ``testCaseName``.
-    testName?: string,
-
-    line: number,
-    failureMessage: string|null
-}
+import { TSingleTestOutput } from './types';
 
 const OUTPUT_LOG_NAME = 'ATest: Test output';
 
@@ -56,7 +25,7 @@ export class SingleTestOutput {
     }
 
     get isFailure () {
-        return this.output.failureMessage !== null
+        return this.output.failureMessage !== undefined
     }
 
     get isSuccessful () {
@@ -64,7 +33,7 @@ export class SingleTestOutput {
     }
 
     get uri () {
-        return vscode.Uri.file(this.output.fsPath);
+        return vscode.Uri.file(this.output.fileFsPath);
     }
 
     async navigateTo () {
@@ -91,7 +60,7 @@ export class SingleTestOutput {
     }
 
     get summaryHeading() {
-        return `File: ${this.output.fsPath}\nCode path: ${this.dottedCodePath}`;
+        return `File: ${this.output.fileFsPath}\nCode path: ${this.dottedCodePath}`;
     }
 
     get compactTestSummary(): string {
@@ -111,11 +80,11 @@ export class SingleTestOutput {
     }
 
     async show () {
+        await this.navigateTo();
         const outputChannel = getOutputLogChannel();
         outputChannel.clear();
-        outputChannel.show();
         this.logTestResult(outputChannel);
-        await this.navigateTo();
+        outputChannel.show();
     }
 }
 

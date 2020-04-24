@@ -36,14 +36,14 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
         let codePath = attributes.classname.split('.');
         codePath.push(attributes.name);
 
-        let failureMessage = null
+        let failureMessage = undefined
         if (testcaseElement.failure && testcaseElement.failure.length > 0) {
             failureMessage = this.joinFailureElements(testcaseElement.failure)
         }
 
         this.testOutputSet.add(new SingleTestOutput({
             codePath: codePath,
-            fsPath: this.workspaceFolderHelper.absoluteFsPath(attributes.file),
+            fileFsPath: this.workspaceFolderHelper.absoluteFsPath(attributes.file),
             relativeFsPath: attributes.file,
             line: parseInt(attributes.line, 10),
             failureMessage: failureMessage,
