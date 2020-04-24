@@ -1,0 +1,212 @@
+{
+    "name": "atest",
+    "displayName": "ATest - test UI for vscode",
+    "description": "A test UI for vscode.",
+    "publisher": "appresso",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/appressoas/atest"
+    },
+    "version": "1.0.0",
+    "engines": {
+        "vscode": "^1.43.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "keywords": [
+        "python",
+        "javascript"
+    ],
+    "activationEvents": [
+        "onCommand:atest.runTestAtCursor",
+        "onCommand:atest.runTestsInCurrentFile",
+        "onCommand:atest.runTestsInFolder",
+        "onCommand:atest.runTestsInFile"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "atest.runTestAtCursor",
+                "title": "ATest: Run test at cursor"
+            },
+            {
+                "command": "atest.runTestsInCurrentFile",
+                "title": "ATest: Run tests in current file"
+            },
+            {
+                "command": "atest.runTestsInFolder",
+                "title": "ATest: Run all tests in directory"
+            },
+            {
+                "command": "atest.runTestsInFile",
+                "title": "ATest: Run all tests in file"
+            },
+            {
+                "command": "atest.testResultsShowSingleTest",
+                "title": "Show"
+            },
+            {
+                "command": "atest.testResultsReRunSingleTest",
+                "title": "ATest: Re-run test"
+            },
+            {
+                "command": "atest.testResultsReRunTestSet",
+                "title": "ATest: Re-run tests"
+            },
+            {
+                "command": "atest.testResultsReRunFailedInTestSet",
+                "title": "ATest: Re-run failed tests"
+            },
+            {
+                "command": "atest.testResultsShowSingleTestFailureMessage",
+                "title": "ATest: Show failure message"
+            },
+            {
+                "command": "atest.testResultsShowTestSetFailureMessages",
+                "title": "ATest: Show failure messages"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "command": "atest.runTestsInFolder",
+                    "when": "isFileSystemResource && explorerResourceIsFolder"
+                },
+                {
+                    "command": "atest.runTestsInFile",
+                    "when": "isFileSystemResource && !explorerResourceIsFolder"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "atest.testResultsShowSingleTest",
+                    "when": "view == aTestTestResults && viewItem == atestPassedSingleTest || view == aTestTestResults && viewItem == atestFailedSingleTest",
+                    "group": "inline"
+                },
+                {
+                    "command": "atest.testResultsReRunSingleTest",
+                    "when": "view == aTestTestResults && viewItem == atestPassedSingleTest || view == aTestTestResults && viewItem == atestFailedSingleTest"
+                },
+                {
+                    "command": "atest.testResultsReRunTestSet",
+                    "when": "view == aTestTestResults && viewItem == atestPassedOutputSet || view == aTestTestResults && viewItem == atestFailedOutputSet"
+                },
+                {
+                    "command": "atest.testResultsReRunFailedInTestSet",
+                    "when": "view == aTestTestResults && viewItem == atestFailedOutputSet"
+                },
+                {
+                    "command": "atest.testResultsShowSingleTestFailureMessage",
+                    "when": "view == aTestTestResults && viewItem == atestFailedSingleTest"
+                },
+                {
+                    "command": "atest.testResultsShowTestSetFailureMessages",
+                    "when": "view == aTestTestResults && viewItem == atestFailedOutputSet"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "atest.runTestsInFolder",
+                    "when": "false"
+                },
+                {
+                    "command": "atest.runTestsInFile",
+                    "when": "false"
+                },
+                {
+                    "command": "atest.testResultsShowSingleTest",
+                    "when": "false"
+                },
+                {
+                    "command": "atest.testResultsReRunSingleTest",
+                    "when": "false"
+                },
+                {
+                    "command": "atest.testResultsReRunTestSet",
+                    "when": "false"
+                },
+                {
+                    "command": "atest.testResultsReRunFailedInTestSet",
+                    "when": "false"
+                },
+                {
+                    "command": "atest.testResultsShowSingleTestFailureMessage",
+                    "when": "false"
+                },
+                {
+                    "command": "atest.testResultsShowTestSetFailureMessages",
+                    "when": "false"
+                }
+            ]
+        },
+        "views": {
+            "test": [
+                {
+                    "id": "aTestTestResults",
+                    "name": "aTest: Results"
+                }
+            ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "ATest",
+            "properties": {
+                "atest.runner": {
+                    "scope": "runner",
+                    "type": "string",
+                    "default": "",
+                    "description": "The test runner to use."
+                },
+                "atest.genericCommand": {
+                    "scope": "genericCommand",
+                    "type": "string",
+                    "default": "",
+                    "description": "Generic test command executable."
+                },
+                "atest.genericCommandArgs": {
+                    "scope": "genericCommandArgs",
+                    "type": "array",
+                    "default": [],
+                    "description": "Array arguments to genericCommand."
+                },
+                "atest.genericCommandEnv": {
+                    "scope": "genericCommandEnv",
+                    "type": "object",
+                    "default": {},
+                    "description": "Environment variables to use when running the genericCommand."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run compile",
+        "compile": "tsc -p ./",
+        "lint": "eslint src --ext ts",
+        "watch": "tsc -watch -p ./",
+        "pretest": "yarn run compile && yarn run lint",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/glob": "^7.1.1",
+        "@types/mocha": "^7.0.2",
+        "@types/node": "^13.11.0",
+        "@types/vscode": "^1.43.0",
+        "@typescript-eslint/eslint-plugin": "^2.26.0",
+        "@typescript-eslint/parser": "^2.26.0",
+        "electron": "7.1.11",
+        "electron-rebuild": "^1.10.1",
+        "eslint": "^6.8.0",
+        "glob": "^7.1.6",
+        "mocha": "^7.1.1",
+        "typescript": "^3.8.3",
+        "vscode-test": "^1.3.0"
+    },
+    "dependencies": {
+        "expand-home-dir": "^0.0.3",
+        "tree-sitter": "^0.16.1",
+        "tree-sitter-python": "^0.16.1",
+        "xml2js": "^0.4.23"
+    }
+}

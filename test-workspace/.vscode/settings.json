@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "~/.virtualenvs/test-workspace-iZ82L6SF/bin/python3",
+    "atest.runner": "pytest"
+    // "atest.genericCommand": "/Users/espenak/.virtualenvs/test-workspace-iZ82L6SF/bin/pytest",
+    // "atest.genericCommandArgs": ["--junit-xml=tests.xml"]
+}

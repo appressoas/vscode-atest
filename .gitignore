@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+.vscode/tags
+.vscode-test/
+out/
+yarn-error.log
+notes.md
+__pycache__/
+*.vsix
+.vscode-atest-temp/
