@@ -17,11 +17,12 @@ export default class ATest {
     }
 
     runTestAtCursor () {
-        console.log('run test at cursor');
+        vscode.window.showInformationMessage('run test at cursor - not implemented yet.');
     }
 
     getRunner (workspaceFolder: vscode.WorkspaceFolder, runnerOptions: TRunnerOptions): AbstractRunner {
         const runnerName = new WorkspaceFolderSettings(workspaceFolder).runner;
+        // TODO: Autodetect runner?
         if (runnerName === 'pytest') {
             return new PyTestRunner(this.testResultsProvider, workspaceFolder, runnerOptions);
         } else {
