@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import AbstractOutputHandler from "../outputhandlers/AbstractOutputHandler";
 import WorkspaceFolderHelper from '../WorkspaceFolderHelper';
-import { TestResultsProvider } from '../TestResultsProvider';
-import { TExecutable, TRunnerOptions } from '../types';
+import { TExecutable } from '../types';
+import { ResultTreeItem } from '../ResultTreeItem';
+import DumbLogOutputHandler from '../outputhandlers/DumbLogOutputHandler';
 
 export class RunnerError extends Error {
     constructor(public runner: AbstractRunner, public error: Error|null = null) {
@@ -19,8 +20,8 @@ export default abstract class AbstractRunner {
     outputChannel: vscode.OutputChannel;
     workspaceFolderHelper: WorkspaceFolderHelper;
 
-    constructor (public testResultsProvider: TestResultsProvider, public workspaceFolder: vscode.WorkspaceFolder, public runnerOptions: TRunnerOptions) {
-        this.workspaceFolderHelper = new WorkspaceFolderHelper(workspaceFolder);
+    constructor (public result: ResultTreeItem) {
+        this.workspaceFolderHelper = new WorkspaceFolderHelper(result.context.workspaceFolder);
         this.executable = this.getExecutable();
         this.executableOptions = this.makeExecutableOptions();
         this.description = this.makeDescription();
@@ -33,9 +34,13 @@ export default abstract class AbstractRunner {
     protected abstract getExecutable(): TExecutable|null;
     protected abstract getOutputHandler(): AbstractOutputHandler;
 
+    get workspaceFolder() {
+        return this.result.context.workspaceFolder;
+    }
+
     protected makeExecutableOptions () {
         return {
-            cwd: this.workspaceFolder.uri.path,
+            cwd: this.workspaceFolder.uri.fsPath,
             env: this.executable?.env || {}
         }
     }
@@ -68,7 +73,6 @@ export default abstract class AbstractRunner {
             this.outputChannel.show();
             
             const outputHandler = this.getOutputHandler();
-            this.testResultsProvider.setOutputHandler(outputHandler);
             let hasResolved = false;
             const childProcess = child_process.spawn(this.executable.command, this.executable.args, this.executableOptions);
             childProcess.stdout.on('data', (data) => {

@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+
 /**
  * Defines an executable to be executed as a child process.
  * 
@@ -20,21 +22,27 @@ export type TExecutable = {
  * I.e.: We throw as much details as possible at the runner and it tries
  * to run it. The rule is that more explicit options such as
  * ``testSuiteName+testCaseName+testName`` takes presedence over
- * less specific options such as ``fileFsPath`` if both are specified.
+ * less specific options such as ``fileFsUri`` if both are specified.
  * I.e.: Runners should try to run as few tests as possible based on the
  * provided options.
  * 
  * Most runners run fine without ANY options. E.g.: They run all tests.
  */
 export type TRunnerOptions = {
+    // The workspace folder to run the tests within
+    workspaceFolder: vscode.WorkspaceFolder;
+
+    // Runner name - when this is provided, we skip detecting the runner.
+    // I.e.: This is used when re-running tests.
+    runnerName: string;
 
     // Absolute path to a file.
-    fileFsPath?: string;
+    fileFsUri?: vscode.Uri;
 
     // Absolute path to a folder.
-    folderFsPath?: string;
+    folderFsUri?: vscode.Uri;
 
-    // The line number of a test to run in the ``fileFsPath`` file.
+    // The line number of a test to run in the ``fileFsUri`` file.
     line?: number;
 
     // The name of the test suite. Used when re-running tests,
@@ -96,4 +104,23 @@ export type TSingleTestOutput = {
 
     // Failure message (if the test failed)
     failureMessage?: string;
+}
+
+export enum EResultTreeItemType {
+    WorkspaceFolder = 'WorkspaceFolder',
+    Generic = 'Generic',
+    TestSuite = 'TestSuite',
+    TestCase = 'TestCase',
+    Test = 'Test'
+}
+
+export enum EResultTreeItemStatus {
+    // Waiting for tests to start
+    WaitingToStart = 'WaitingToStart',
+
+    // Running tests
+    Running = 'Running',
+
+    // All tests below this item (recursively) is done
+    Done = 'Done'
 }

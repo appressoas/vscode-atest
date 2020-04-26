@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import ATest from './ATest';
-import { TestResultsProvider, SingleTestOutputTreeItem, TestOutputSetTreeItem } from './TestResultsProvider';
+import { ResultTreeItem } from './ResultTreeItem';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -26,24 +26,24 @@ export function activate(context: vscode.ExtensionContext) {
 		atest.runTestsInFile(fileUri);
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsShowSingleTest', (singleTestOutputTreeItem: SingleTestOutputTreeItem) => {
-		atest.testResultsShowSingleTest(singleTestOutputTreeItem);
+	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsShowSingleTest', (resultTreeItem: ResultTreeItem) => {
+		atest.testResultsShowSingleTest(resultTreeItem);
 	}));
-	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsReRunSingleTest', (singleTestOutputTreeItem: SingleTestOutputTreeItem) => {
-		atest.testResultsReRunSingleTest(singleTestOutputTreeItem);
+	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsReRunSingleTest', (resultTreeItem: ResultTreeItem) => {
+		atest.testResultsReRunSingleTest(resultTreeItem);
 	}));
-	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsShowSingleTestFailureMessage', (singleTestOutputTreeItem: SingleTestOutputTreeItem) => {
-		atest.testResultsShowSingleTestFailureMessage(singleTestOutputTreeItem);
+	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsShowSingleTestFailureMessage', (resultTreeItem: ResultTreeItem) => {
+		atest.testResultsShowSingleTestFailureMessage(resultTreeItem);
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsReRunTestSet', (testOutputSetTreeItem: TestOutputSetTreeItem) => {
-		atest.testResultsReRunTestSet(testOutputSetTreeItem);
+	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsReRunTestSet', (resultTreeItem: ResultTreeItem) => {
+		atest.testResultsReRunTestSet(resultTreeItem);
 	}));
-	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsReRunFailedInTestSet', (testOutputSetTreeItem: TestOutputSetTreeItem) => {
-		atest.testResultsReRunFailedInTestSet(testOutputSetTreeItem);
+	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsReRunFailedInTestSet', (resultTreeItem: ResultTreeItem) => {
+		atest.testResultsReRunFailedInTestSet(resultTreeItem);
 	}));
-	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsShowTestSetFailureMessages', (testOutputSetTreeItem: TestOutputSetTreeItem) => {
-		atest.testResultsShowTestSetFailureMessages(testOutputSetTreeItem);
+	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsShowTestSetFailureMessages', (resultTreeItem: ResultTreeItem) => {
+		atest.testResultsShowTestSetFailureMessages(resultTreeItem);
 	}));
 }
 

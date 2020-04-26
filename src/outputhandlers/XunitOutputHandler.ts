@@ -1,8 +1,10 @@
+import * as vscode from 'vscode';
 import * as fs from 'fs';
 import AbstractOutputHandler from "./AbstractOutputHandler";
 import {SingleTestOutput} from "../TestOutputSet";
 // @ts-ignore
 import * as xml2js from 'xml2js';
+import { EResultTreeItemType } from '../types';
 
 export default class XunitOutputHandler extends AbstractOutputHandler {
 
@@ -41,16 +43,13 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
             failureMessage = this.joinFailureElements(testcaseElement.failure)
         }
 
-        this.testOutputSet.add(new SingleTestOutput({
-            codePath: codePath,
-            fileFsPath: this.workspaceFolderHelper.absoluteFsPath(attributes.file),
-            relativeFsPath: attributes.file,
-            line: parseInt(attributes.line, 10),
-            failureMessage: failureMessage,
-            testSuiteName: testSuiteName,
-            testCaseName: attributes.classname,
-            testName: attributes.name
-        }));
+        const resultItem = this.result.makeResultTreeItem(codePath);
+        resultItem.resultType = EResultTreeItemType.Test;
+        resultItem.fileFsUri = this.workspaceFolderHelper.absoluteFsUri(attributes.file);
+        resultItem.line = parseInt(attributes.line, 10);
+        resultItem.failureMessage = failureMessage;
+        resultItem.failureMessage = failureMessage;
+        this.result.add(resultItem);
     }
 
     addTestSuiteElement (testsuiteElement: any) {
@@ -80,7 +79,8 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
             // console.log(this.testOutputSet.toPlainObject());
             // console.log('DONE. Result: ', this.testOutputSet.toJson());
             // this.outputChannel.append(`DONE. Result:\n${this.testOutputSet.toJson()}`);
-            this.testResultsProvider.refresh();
+            this.result.optimize();
+            this.result.refresh();
         });
     }
 }

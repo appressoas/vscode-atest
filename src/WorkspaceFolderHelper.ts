@@ -18,6 +18,10 @@ export default class WorkspaceFolderHelper {
         return path.resolve(this.workspaceFolder.uri.fsPath, fsPath);
     }
 
+    absoluteFsUri(fsPath: string) {
+        return vscode.Uri.file(this.absoluteFsPath(fsPath));
+    }
+
     get tempDirectoryPath(): string {
         const tempDirectoryPath = path.join(this.workspaceFolder.uri.fsPath, '.vscode-atest-temp');
         if (!fs.existsSync(tempDirectoryPath)) {

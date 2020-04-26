@@ -17,7 +17,15 @@ export default class PyTestRunner extends AbstractRunner {
         pythonPath = expandHomeDir(pythonPath);
         const pythonBinPath = path.dirname(<string>pythonPath);
         const pytestPath = path.join(pythonBinPath, 'pytest')
-        const pathToRun = this.runnerOptions.fileFsPath || this.runnerOptions.folderFsPath
+        let pathToRun;
+        if (this.result.fileFsUri) {
+            pathToRun = this.result.fileFsUri.fsPath;
+        } else if (this.result.folderFsUri) {
+            pathToRun = this.result.folderFsUri.fsPath;
+        } else {
+            // throw new Error('Can not run - no folder or file provided.');
+            return null;
+        }
         let args = [
             '-v',
             `--junit-xml=${this.workspaceFolderHelper.getTempDirectoryFilePath('tests.xml', true)}`
@@ -32,6 +40,6 @@ export default class PyTestRunner extends AbstractRunner {
     }
 
     protected getOutputHandler(): AbstractOutputHandler {
-        return new XunitOutputHandler(this);
+        return new XunitOutputHandler(this.result, this.outputChannel);
     }
 }

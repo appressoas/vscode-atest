@@ -15,6 +15,6 @@ export default class GenericRunner extends AbstractRunner {
     }
 
     protected getOutputHandler(): AbstractOutputHandler {
-        return new DumbLogOutputHandler(this);
+        return new DumbLogOutputHandler(this.result, this.outputChannel);
     }
 }
