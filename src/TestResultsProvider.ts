@@ -7,14 +7,13 @@ import { ResultTreeItem, IResultTreeItemContainer, WorkspaceFolderResultTreeItem
 export class TestResultsProvider implements vscode.TreeDataProvider<ResultTreeItem>, IResultTreeItemContainer {
     private _onDidChangeTreeData: vscode.EventEmitter<ResultTreeItem|undefined> = new vscode.EventEmitter<ResultTreeItem|undefined>();
     readonly onDidChangeTreeData: vscode.Event<ResultTreeItem|undefined> = this._onDidChangeTreeData.event;
-    testResultsProvider: TestResultsProvider;
     workspaceFolderResultTreeItemMap: Map<string, WorkspaceFolderResultTreeItem>;
+    treeView: vscode.TreeView<ResultTreeItem>;
 
     constructor () {
         this.workspaceFolderResultTreeItemMap = new Map<string, WorkspaceFolderResultTreeItem>();
-        this.testResultsProvider = new TestResultsProvider();
-        vscode.window.createTreeView('aTestTestResults', {
-            treeDataProvider: this.testResultsProvider
+        this.treeView = vscode.window.createTreeView('aTestTestResults', {
+            treeDataProvider: this
         });
     }
   
@@ -31,20 +30,33 @@ export class TestResultsProvider implements vscode.TreeDataProvider<ResultTreeIt
         this.refresh();
     }
 
-    setWorkspaceFolderResultTreeItem(resultTreeItem: WorkspaceFolderResultTreeItem) {
+    revealItem (resultTreeItem: ResultTreeItem) {
+        this.treeView.reveal(resultTreeItem);
+    }
+
+    setWorkspaceFolderResultTreeItem(resultTreeItem: WorkspaceFolderResultTreeItem, reveal: boolean = true) {
         this.workspaceFolderResultTreeItemMap.set(resultTreeItem.context.workspaceFolder.name, resultTreeItem);
         this.refresh();
+        if (reveal) {
+            this.revealItem(resultTreeItem);
+        }
     }
 
     getTreeItem(item: ResultTreeItem): vscode.TreeItem {
         return item;
     }
 
+    getParent(resultTreeItem: ResultTreeItem): Thenable<ResultTreeItem|undefined> {
+        return Promise.resolve(resultTreeItem.parent);
+    }
+
     getChildren(resultTreeItem?: ResultTreeItem): Thenable<Array<ResultTreeItem>> {
+        // console.log('getChildren', resultTreeItem);
         if (this.workspaceFolderResultTreeItemMap.size === 0) {
             return Promise.resolve([]);
         }
         if (resultTreeItem) {
+            // console.log(resultTreeItem.toJson());
             return Promise.resolve(Array.from(resultTreeItem.children.values()));
         } else {
             return Promise.resolve(Array.from(this.workspaceFolderResultTreeItemMap.values()));

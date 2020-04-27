@@ -24,6 +24,8 @@ export default class PyTestRunner extends AbstractRunner {
             pathToRun = this.result.folderFsUri.fsPath;
         } else {
             // throw new Error('Can not run - no folder or file provided.');
+            vscode.window.showErrorMessage('ATest: PyTestRunner did not receive any runnable options. See the output log for more details.');
+            this.outputChannel.appendLine(`PyTestRunner can not run: ${this.result.toJson()}`);
             return null;
         }
         let args = [

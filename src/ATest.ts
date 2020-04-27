@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import PyTestRunner from './runners/PyTestRunner';
 import { TestResultsProvider } from './TestResultsProvider';
 import { WorkspaceFolderResultTreeItem, ResultTreeItem } from './ResultTreeItem';
 
@@ -8,9 +7,6 @@ export default class ATest {
 
     constructor () {
         this.testResultsProvider = new TestResultsProvider();
-        vscode.window.createTreeView('aTestTestResults', {
-            treeDataProvider: this.testResultsProvider
-        });
     }
 
     runTestAtCursor () {
@@ -63,22 +59,24 @@ export default class ATest {
     }
 
     runTestsInFile (fileUri: vscode.Uri) {
-        console.log('runTestsInFile!');
+        vscode.window.showInformationMessage(`running tests in ${fileUri.fsPath}`);
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
         if (!workspaceFolder) {
-            vscode.window.showErrorMessage('ATest: Run tests in file - Could not find workspace folder for file.');
+            vscode.window.showErrorMessage(`ATest: Run tests in file - Could not find workspace folder for ${fileUri.fsPath}.`);
             return;
         }
-        const workspaceFolderResultTreeItem = new WorkspaceFolderResultTreeItem({
+        const result = new WorkspaceFolderResultTreeItem({
             workspaceFolder: workspaceFolder,
             runnerName: 'pytest',
             container: this.testResultsProvider
         });
-        this.testResultsProvider.setWorkspaceFolderResultTreeItem(workspaceFolderResultTreeItem);
-        workspaceFolderResultTreeItem.run().then(() => {});
-        // this.getRunner(currentFileWorkspaceFolder, {fileFsPath: fileUri.fsPath}).run()
-        // .then(() => {
-        // });
+        result.fileFsUri = fileUri;
+        this.testResultsProvider.setWorkspaceFolderResultTreeItem(result);
+        result.run()
+            .then(() => {})
+            .catch((error: Error) => {
+                vscode.window.showErrorMessage(`Test run failed: ${error.message}`);
+            });
     }
 
     testResultsShowSingleTest (resultTreeItem: ResultTreeItem) {

@@ -22,10 +22,10 @@ export default abstract class AbstractRunner {
 
     constructor (public result: ResultTreeItem) {
         this.workspaceFolderHelper = new WorkspaceFolderHelper(result.context.workspaceFolder);
+        this.outputChannel = vscode.window.createOutputChannel(this.outputChannelName);
         this.executable = this.getExecutable();
         this.executableOptions = this.makeExecutableOptions();
         this.description = this.makeDescription();
-        this.outputChannel = vscode.window.createOutputChannel(this.outputChannelName);
         if (this.executable === null) {
             this.outputChannel.appendLine('No test runner executable provided.');
         }

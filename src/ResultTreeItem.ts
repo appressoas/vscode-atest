@@ -97,9 +97,9 @@ export class ResultTreeItem extends vscode.TreeItem {
 
     async run () {
         if (this.context.runnerName === 'pytest') {
-            return new PyTestRunner(this);
+            await new PyTestRunner(this).run();
         } else {
-            return new GenericRunner(this);
+            await new GenericRunner(this).run();
         }        
     }
 
@@ -250,20 +250,35 @@ export class ResultTreeItem extends vscode.TreeItem {
         return this;
     }
 
+    get flatSelf (): ResultTreeItem {
+        if (this.children.size === 1) {
+            return this.children.values().next().value.flatSelf;
+        }
+        return this;
+    }
+
+    // get flatChildren () {
+    //     const children = [];
+    // }
+
     toPlainObject () {
-        // function childrenToPlain (children: Map<string, ResultTreeItem>) {
-        //     const out = 
-        // }
+        function childrenToPlain (children: Map<string, ResultTreeItem>) {
+            const out: any = {}
+            for (let [key, value] of children) {
+                out[key] = value.toPlainObject();
+            }
+            return out;
+        }
         const data: any = {
             codePath: this.codePath.join('::'),
             resultType: this.resultType,
-            children: Array.from(this.children.values()).map(child => child.toPlainObject()),
+            children: childrenToPlain(this.children),
             testCount: this.testCount,
             status: this.status,
             _isOptimized: this._isOptimized
         };
         if (this._isOptimized) {
-            data.failedChildren = Array.from(this.failedChildren.values()).map(child => child.toPlainObject());
+            data.failedChildren = childrenToPlain(this.failedChildren);
             data.failedTestCount = this.failedTestCount
         }
         return data

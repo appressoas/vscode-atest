@@ -45,30 +45,24 @@ suite('XunitOutputHandler Test Suite', () => {
 	test('handleProcessDone failure mapped correctly', () => {
 		const outputHandler = new MockXunitOutputHandlerFull();
 		return outputHandler.handleProcessDone().then(() => {
-			// console.log(outputHandler.result.toPlainObject());
-			// assert(outputHandler.result.failedChildren.has('test_stringutils'))
-			// assert(!outputHandler.result.failedChildren.get('test_stringutils')!.failedChildren.has('test_stuff'))
-			// assert(outputHandler.result.failedChildren.get('test_stringutils')!.failedChildren.has('test_replace'))
-			// assert(
-			// 	outputHandler.result.failedChildren.get('test_stringutils')!.
-			// 	failedChildren.get('test_replace')!.failedChildren.has('TestReplace'))
+			assert(outputHandler.result.failedChildren.has('test_stringutils'))
+			assert(!outputHandler.result.failedChildren.get('test_stringutils')!.failedChildren.has('test_stuff'))
+			assert(outputHandler.result.failedChildren.get('test_stringutils')!.failedChildren.has('test_replace'))
+			assert(
+				outputHandler.result.failedChildren.get('test_stringutils')!.
+				failedChildren.get('test_replace')!.failedChildren.has('TestReplace'))
 
-			// assert.equal(
-			// 	outputHandler.result.failedChildren.get('test_stringutils')?.
-			// 	failedChildren.get('test_replace')?.failedChildren.get('TestReplace')?.
-			// 	failedChildren.size, 0)
-			// assert.equal(
-			// 	outputHandler.result.failedChildren.get('test_stringutils')?.
-			// 	failedChildren.get('test_replace')?.failedChildren.get('TestReplace')?.
-			// 	failedOutputs.length, 1)
-			
-			// const failedOutput = outputHandler.result.failedChildren.get('test_stringutils')?.
-			// 	failedChildren.get('test_replace')?.failedChildren.get('TestReplace')?.
-			// 	failedOutputs[0];
-			// assert.equal(failedOutput?.name, 'test_will_fail')
-			// assert(failedOutput?.isFailure)
-			// assert.equal(failedOutput?.output.line, 10)
-			// assert.equal(failedOutput?.output.fileFsPath, 'test_stringutils/test_replace.py')
+			assert.equal(
+				outputHandler.result.failedChildren.get('test_stringutils')!.
+				failedChildren.get('test_replace')!.failedChildren.get('TestReplace')!.
+				failedChildren.size, 1)			
+
+			const failedChild = <ResultTreeItem>outputHandler.result.failedChildren.get('test_stringutils')?.
+				failedChildren.get('test_replace')?.failedChildren.get('TestReplace')?.
+				failedChildren.get('test_will_fail');
+			assert.equal(failedChild.name, 'test_will_fail')
+			assert(failedChild.isFailedTest)
+			assert.equal(failedChild.line, 10)
 		});
 	});
 });
