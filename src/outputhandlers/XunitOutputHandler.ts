@@ -38,7 +38,7 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
         let codePath = attributes.classname.split('.');
         codePath.push(attributes.name);
 
-        let failureMessage = undefined
+        let failureMessage = undefined;
         if (testcaseElement.failure && testcaseElement.failure.length > 0) {
             failureMessage = this.joinFailureElements(testcaseElement.failure)
         }
@@ -49,6 +49,9 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
         resultItem.line = parseInt(attributes.line, 10);
         resultItem.failureMessage = failureMessage;
         resultItem.failureMessage = failureMessage;
+        resultItem.testSuitePath = testSuiteName?.split('.');
+        resultItem.testCasePath = attributes.classname.split('.');
+        resultItem.testPath = [attributes.name];
         this.result.add(resultItem);
     }
 

@@ -45,23 +45,23 @@
             },
             {
                 "command": "atest.testResultsReRunSingleTest",
-                "title": "ATest: Re-run test"
+                "title": "Re-run"
             },
             {
                 "command": "atest.testResultsReRunTestSet",
-                "title": "ATest: Re-run tests"
+                "title": "Re-run tests"
             },
             {
                 "command": "atest.testResultsReRunFailedInTestSet",
-                "title": "ATest: Re-run failed tests"
+                "title": "Re-run failed tests"
             },
             {
                 "command": "atest.testResultsShowSingleTestFailureMessage",
-                "title": "ATest: Show failure message"
+                "title": "Show failure message"
             },
             {
                 "command": "atest.testResultsShowTestSetFailureMessages",
-                "title": "ATest: Show failure messages"
+                "title": "Show failure messages"
             }
         ],
         "menus": {
@@ -77,13 +77,14 @@
             ],
             "view/item/context": [
                 {
-                    "command": "atest.testResultsShowSingleTest",
+                    "command": "atest.testResultsReRunSingleTest",
                     "when": "view == aTestTestResults && viewItem == atestPassedSingleTest || view == aTestTestResults && viewItem == atestFailedSingleTest",
                     "group": "inline"
                 },
                 {
-                    "command": "atest.testResultsReRunSingleTest",
-                    "when": "view == aTestTestResults && viewItem == atestPassedSingleTest || view == aTestTestResults && viewItem == atestFailedSingleTest"
+                    "command": "atest.testResultsShowSingleTest",
+                    "when": "view == aTestTestResults && viewItem == atestPassedSingleTest || view == aTestTestResults && viewItem == atestFailedSingleTest",
+                    "group": "inline"
                 },
                 {
                     "command": "atest.testResultsReRunTestSet",

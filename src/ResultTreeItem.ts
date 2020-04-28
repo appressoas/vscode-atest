@@ -53,22 +53,22 @@ export class ResultTreeItem extends vscode.TreeItem {
     // Line number in ``fileFsPath`` where the test is located.
     line?: number;
 
-    // // The name of the test suite. Used when re-running tests,
-    // // and the format is highly language and test-runner dependent.
-    // // Typically the code path to the test suite class/module.
-    // testSuiteName?: string;
+    // The name of the test suite. Used when re-running tests,
+    // and the format is highly language and test-runner dependent.
+    // Typically the code path to the test suite class/module.
+    testSuitePath?: string[];
 
-    // // The name of the test case. Used when re-running tests,
-    // // and the format is highly language and test-runner dependent.
-    // // Typically the code path to the test case class, or the relative code
-    // // path from the ``testSuiteName``.
-    // testCaseName?: string;
+    // The name of the test case. Used when re-running tests,
+    // and the format is highly language and test-runner dependent.
+    // Typically the code path to the test case class, or the relative code
+    // path from the ``testSuitePath``.
+    testCasePath?: string[];
 
-    // // The name of the test. Used when re-running tests,
-    // // and the format is highly language and test-runner dependent.
-    // // Typically the code path to the test case function/method, or the relative code
-    // // path from the ``testCaseName``.
-    // testName?: string;
+    // The path of the test. Used when re-running tests,
+    // and the format is highly language and test-runner dependent.
+    // Typically the code path to the test case function/method, or the relative code
+    // path from the ``testCasePath``.
+    testPath?: string[];
 
     // Failure message (if the test failed). Only used if resultType is EResultTreeItemType.Test.
     // If this is set (not undefined), it means that the test failed.

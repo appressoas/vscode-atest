@@ -25,6 +25,13 @@ export default class PyTestRunner extends AbstractRunner {
         let pathToRun;
         if (this.result.fileFsUri) {
             pathToRun = this.result.fileFsUri.fsPath;
+            if (this.result.testCasePath) {
+                const testCaseClassName = this.result.testCasePath[this.result.testCasePath.length - 1];
+                pathToRun = `${pathToRun}::${testCaseClassName}`
+            }
+            if (this.result.testPath) {
+                pathToRun = `${pathToRun}::${this.result.testPath[0]}`
+            }
         } else if (this.result.folderFsUri) {
             pathToRun = this.result.folderFsUri.fsPath;
         } else {
