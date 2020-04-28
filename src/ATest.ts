@@ -10,77 +10,55 @@ export default class ATest {
         this.testResultsProvider = new TestResultsProvider();
     }
 
-    runTestAtCursor () {
-        vscode.window.showInformationMessage('run test at cursor - not implemented yet.');
-    }
-
-    getTestRunnerNamesFromUri(uri: vscode.Uri) {
-        
-    }
-
-    // getRunner (workspaceFolder: vscode.WorkspaceFolder, runnerOptions: TRunnerOptions): AbstractRunner {
-    //     const runnerName = new WorkspaceFolderSettings(workspaceFolder).runner;
-    //     // TODO: Autodetect runner?
-    //     if (runnerName === 'pytest') {
-    //         return new PyTestRunner(this.testResultsProvider, workspaceFolder, runnerOptions);
-    //     } else {
-    //         return new GenericRunner(this.testResultsProvider, workspaceFolder, runnerOptions);
-    //     }
-    // }
-
-    runTestsInCurrentFile () {
-        console.log('run tests in current file');
-        // if (!vscode.workspace.workspaceFolders) {
-        //     return;
-        // }
-        // const currentFileUri = vscode.window.activeTextEditor?.document.uri;
-        // if (!currentFileUri) {
-        //     return;
-        // }
-        // const currentFileWorkspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);
-        // if (!currentFileWorkspaceFolder) {
-        //     return;
-        // }
-        // // for (let workspaceFolder of vscode.workspace.workspaceFolders) {
-        // //     this.getRunner(workspaceFolder).run()
-        // //     .then(() => {
-        // //         console.log('DONE');
-        // //     });
-        // // }
-        // this.getRunner(currentFileWorkspaceFolder, {fileFsPath: currentFileUri.fsPath}).run()
-        // .then(() => {
-        // });
-    }
-
-    runTestsInFolder (folderUri: vscode.Uri) {
-        vscode.window.showInformationMessage('run test in folder - not implemented yet.');
-        // const currentFileWorkspaceFolder = vscode.workspace.getWorkspaceFolder(folderUri);
-        // if (!currentFileWorkspaceFolder) {
-        //     return;
-        // }
-        // this.getRunner(currentFileWorkspaceFolder, {folderFsPath: folderUri.fsPath}).run()
-        // .then(() => {
-        // });
-    }
-
-    runTestsInFile (fileUri: vscode.Uri) {
-        vscode.window.showInformationMessage(`running tests in ${fileUri.fsPath}`);
-        const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
+    private _runTestsAtUri (uri: vscode.Uri, setOptions: (resultTreeItem: ResultTreeItem) => void) {
+        vscode.window.showInformationMessage(`running tests in ${uri.fsPath}`);
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
         if (!workspaceFolder) {
-            vscode.window.showErrorMessage(`ATest: Run tests in file - Could not find workspace folder for ${fileUri.fsPath}.`);
+            vscode.window.showErrorMessage(`ATest: Could not find workspace folder for ${uri.fsPath}.`);
             return;
         }
         const settings = new WorkspaceFolderSettings(workspaceFolder);
-        console.log(settings.getRunnerNamesFromUri(fileUri));
-        for (let runnerName of settings.getRunnerNamesFromUri(fileUri)) {
+        const runnerNames = settings.getRunnerNamesFromUri(uri);
+        if (runnerNames.length === 0) {
+            vscode.window.showErrorMessage(`ATest: Could not find runners that can handle ${uri.fsPath}.`);
+            return;
+        }
+        for (let runnerName of settings.getRunnerNamesFromUri(uri)) {
             const result = new WorkspaceFolderResultTreeItem({
                 workspaceFolder: workspaceFolder,
                 runnerName: runnerName,
                 container: this.testResultsProvider
             });
-            result.fileFsUri = fileUri;
+            setOptions(result);
             this.testResultsProvider.runWorkspaceFolderResultTreeItem(result);
         }
+    }
+
+    runTestAtCursor () {
+        vscode.window.showInformationMessage('run test at cursor - not implemented yet.');
+    }
+
+    runTestsInCurrentFile () {
+        const currentFileUri = vscode.window.activeTextEditor?.document.uri;
+        if (!currentFileUri) {
+            vscode.window.showErrorMessage(`ATest: Could not find current file URI.`);
+            return;
+        }
+        this._runTestsAtUri(currentFileUri, (resultTreeItem: ResultTreeItem) => {
+            resultTreeItem.fileFsUri = currentFileUri;
+        });
+    }
+
+    runTestsInFolder (folderUri: vscode.Uri) {
+        this._runTestsAtUri(folderUri, (resultTreeItem: ResultTreeItem) => {
+            resultTreeItem.fileFsUri = folderUri;
+        });
+    }
+
+    runTestsInFile (fileUri: vscode.Uri) {
+        this._runTestsAtUri(fileUri, (resultTreeItem: ResultTreeItem) => {
+            resultTreeItem.fileFsUri = fileUri;
+        });
     }
 
     testResultsShowSingleTest (resultTreeItem: ResultTreeItem) {
