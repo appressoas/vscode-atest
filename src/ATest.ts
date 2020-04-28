@@ -70,7 +70,7 @@ export default class ATest {
     }
 
     testResultsShowSingleTestFailureMessage (resultTreeItem: ResultTreeItem) {
-        vscode.window.showInformationMessage('testResultsShowSingleTestFailureMessage - not implemented yet.');
+        resultTreeItem.showTestResults().then(() => {});
     }
 
     testResultsReRunTestSet (resultTreeItem: ResultTreeItem) {
