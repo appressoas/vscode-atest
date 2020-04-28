@@ -1,6 +1,7 @@
 import AbstractRunner from "./AbstractRunner";
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 // @ts-ignore
 import * as expandHomeDir from 'expand-home-dir';
 import AbstractOutputHandler from "../outputhandlers/AbstractOutputHandler";
@@ -9,6 +10,10 @@ import { TExecutable } from "../types";
 
 
 export default class PyTestRunner extends AbstractRunner {
+    static getRunnerName () {
+        return 'pytest';
+    }
+
     protected getExecutable(): TExecutable|null {
         let pythonPath: string|undefined = vscode.workspace.getConfiguration('python', this.workspaceFolder).get('pythonPath');
         if (!pythonPath) {
@@ -43,5 +48,16 @@ export default class PyTestRunner extends AbstractRunner {
 
     protected getOutputHandler(): AbstractOutputHandler {
         return new XunitOutputHandler(this.result, this.outputChannel);
+    }
+
+    static canRunUri(uri: vscode.Uri): boolean {
+        const stat = fs.lstatSync(uri.fsPath);
+        if (stat.isDirectory()) {
+            return true;
+        }
+        if (stat.isFile() && uri.fsPath.endsWith('.py')) {
+            return true;
+        }
+        return false;
     }
 }

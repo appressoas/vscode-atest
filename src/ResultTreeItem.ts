@@ -4,6 +4,7 @@ import { EResultTreeItemType, EResultTreeItemStatus } from './types';
 import PyTestRunner from './runners/PyTestRunner';
 import GenericRunner from './runners/GenericRunner';
 import WorkspaceFolderHelper from './WorkspaceFolderHelper';
+import { RUNNER_REGISTRY } from './runners/RunnerRegistry';
 
 export interface IResultTreeItemContainer {
     refreshSingleResultTreeItem(resultTreeItem: ResultTreeItem): void;
@@ -77,6 +78,8 @@ export class ResultTreeItem extends vscode.TreeItem {
 
     private _isOptimized: boolean;
 
+    private _isRunningTests: boolean;
+
     constructor(context: TResultTreeItemContext, codePath: string[], resultType: EResultTreeItemType) {
         super('x');  // NOTE: setCodePath sets the label, so it will not be 'x'
         this._codePath = [];  // Just to get typescript to shut up - we set it right below!
@@ -91,18 +94,31 @@ export class ResultTreeItem extends vscode.TreeItem {
         // this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
         this._setCollapsibleState();
         this._isOptimized = false;
+        this._isRunningTests = false;
     }
 
     refresh (): void {
         this.context.container.refreshSingleResultTreeItem(this);
     }
 
-    async run () {
-        if (this.context.runnerName === 'pytest') {
-            await new PyTestRunner(this).run();
-        } else {
-            await new GenericRunner(this).run();
-        }        
+    get rootItem(): ResultTreeItem {
+        if (this.parent) {
+            return this.parent.rootItem;
+        }
+        return this;
+    }
+
+    setIsRunningTests(isRunningTests: boolean) {
+        this.rootItem._isRunningTests = isRunningTests;
+    }
+
+    isRunningTests () {
+        return this.rootItem._isRunningTests;
+    }
+
+    run (): Promise<any> {
+        const runnerClass = RUNNER_REGISTRY.getRunnerClass(this.context.runnerName);
+        return new runnerClass(this).run();
     }
 
     get containsFailed () {

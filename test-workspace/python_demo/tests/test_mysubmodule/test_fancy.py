@@ -1,8 +1,10 @@
 import unittest
+import time
 from ...mysubmodule import fancy
 
 class FancyTestCase(unittest.TestCase):
     def test_fancy_hello(self):
+        # time.sleep(10)
         self.assertEqual(fancy.fancy_hello(), 'Hello Fancy World')
 
     def test_fancy_hello_wrong(self):

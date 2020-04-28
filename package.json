@@ -153,29 +153,11 @@
             "type": "object",
             "title": "ATest",
             "properties": {
-                "atest.runner": {
-                    "scope": "runner",
-                    "type": "string",
-                    "default": "",
-                    "description": "The test runner to use."
-                },
-                "atest.genericCommand": {
-                    "scope": "genericCommand",
-                    "type": "string",
-                    "default": "",
-                    "description": "Generic test command executable."
-                },
-                "atest.genericCommandArgs": {
-                    "scope": "genericCommandArgs",
+                "atest.runners": {
+                    "scope": "resource",
                     "type": "array",
                     "default": [],
-                    "description": "Array arguments to genericCommand."
-                },
-                "atest.genericCommandEnv": {
-                    "scope": "genericCommandEnv",
-                    "type": "object",
-                    "default": {},
-                    "description": "Environment variables to use when running the genericCommand."
+                    "description": "The test runners to enable. Each item is an object with at least a \"name\" key. Other options vary from runner to runner."
                 }
             }
         }

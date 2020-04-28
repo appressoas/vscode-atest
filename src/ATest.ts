@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { TestResultsProvider } from './TestResultsProvider';
 import { WorkspaceFolderResultTreeItem, ResultTreeItem } from './ResultTreeItem';
+import WorkspaceFolderSettings from './WorkspaceFolderSettings';
 
 export default class ATest {
     testResultsProvider: TestResultsProvider;
@@ -11,6 +12,10 @@ export default class ATest {
 
     runTestAtCursor () {
         vscode.window.showInformationMessage('run test at cursor - not implemented yet.');
+    }
+
+    getTestRunnerNamesFromUri(uri: vscode.Uri) {
+        
     }
 
     // getRunner (workspaceFolder: vscode.WorkspaceFolder, runnerOptions: TRunnerOptions): AbstractRunner {
@@ -65,18 +70,17 @@ export default class ATest {
             vscode.window.showErrorMessage(`ATest: Run tests in file - Could not find workspace folder for ${fileUri.fsPath}.`);
             return;
         }
-        const result = new WorkspaceFolderResultTreeItem({
-            workspaceFolder: workspaceFolder,
-            runnerName: 'pytest',
-            container: this.testResultsProvider
-        });
-        result.fileFsUri = fileUri;
-        this.testResultsProvider.setWorkspaceFolderResultTreeItem(result);
-        result.run()
-            .then(() => {})
-            .catch((error: Error) => {
-                vscode.window.showErrorMessage(`Test run failed: ${error.message}`);
+        const settings = new WorkspaceFolderSettings(workspaceFolder);
+        console.log(settings.getRunnerNamesFromUri(fileUri));
+        for (let runnerName of settings.getRunnerNamesFromUri(fileUri)) {
+            const result = new WorkspaceFolderResultTreeItem({
+                workspaceFolder: workspaceFolder,
+                runnerName: runnerName,
+                container: this.testResultsProvider
             });
+            result.fileFsUri = fileUri;
+            this.testResultsProvider.runWorkspaceFolderResultTreeItem(result);
+        }
     }
 
     testResultsShowSingleTest (resultTreeItem: ResultTreeItem) {

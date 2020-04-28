@@ -34,11 +34,29 @@ export class TestResultsProvider implements vscode.TreeDataProvider<ResultTreeIt
         this.treeView.reveal(resultTreeItem);
     }
 
-    setWorkspaceFolderResultTreeItem(resultTreeItem: WorkspaceFolderResultTreeItem, reveal: boolean = true) {
+    setWorkspaceFolderResultTreeItem(resultTreeItem: WorkspaceFolderResultTreeItem, reveal: boolean = true): boolean {
+        if (this.workspaceFolderResultTreeItemMap.has(resultTreeItem.context.workspaceFolder.name)) {
+            const existingTreeItem = <ResultTreeItem>this.workspaceFolderResultTreeItemMap.get(resultTreeItem.context.workspaceFolder.name);
+            if (existingTreeItem.isRunningTests()) {
+                vscode.window.showWarningMessage(`Not running tests. Tests in ${existingTreeItem.context.workspaceFolder.name} is already running.`);
+                return false;
+            }
+        }
         this.workspaceFolderResultTreeItemMap.set(resultTreeItem.context.workspaceFolder.name, resultTreeItem);
         this.refresh();
         if (reveal) {
             this.revealItem(resultTreeItem);
+        }
+        return true;
+    }
+
+    runWorkspaceFolderResultTreeItem (resultTreeItem: WorkspaceFolderResultTreeItem) {
+        if (this.setWorkspaceFolderResultTreeItem(resultTreeItem)) {
+            resultTreeItem.run()
+                .then(() => {})
+                .catch((error: Error) => {
+                    vscode.window.showErrorMessage(`Test run failed: ${error.message}`);
+                });
         }
     }
 

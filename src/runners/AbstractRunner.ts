@@ -33,6 +33,14 @@ export default abstract class AbstractRunner {
     protected abstract getExecutable(): TExecutable|null;
     protected abstract getOutputHandler(): AbstractOutputHandler;
 
+    static getRunnerName () {
+        throw new Error("Must be implemented in subclasses");
+    }
+
+    static canRunUri(uri: vscode.Uri): boolean {
+        return false;
+    }
+
     get workspaceFolder() {
         return this.result.context.workspaceFolder;
     }
@@ -61,7 +69,8 @@ export default abstract class AbstractRunner {
         return `ATest[${this.workspaceFolder.name}] ${this.outputChannelNameSuffix}`;
     }
 
-    async run () {
+    run (): Promise<any> {
+        this.result.setIsRunningTests(true);
         return new Promise((resolve, reject) => {
             if (this.executable === null) {
                 reject(new Error('No test runner executable provided'));
@@ -70,7 +79,7 @@ export default abstract class AbstractRunner {
             this.outputChannel.clear();
             this.outputChannel.appendLine(`Running: ${this.description}`);
             this.outputChannel.show();
-            
+
             const outputHandler = this.getOutputHandler();
             let hasResolved = false;
             const childProcess = child_process.spawn(this.executable.command, this.executable.args, this.executableOptions);
@@ -93,18 +102,19 @@ export default abstract class AbstractRunner {
                     return;
                 }
                 if (code === 0) {
-                    // console.log('SUCCESS');
+                    // this.outputChannel.appendLine(`${this.description}: Successful execution.`);
                     outputHandler.handleProcessDone().then(() => {
                         hasResolved = true;
+                        this.result.setIsRunningTests(false);
                         resolve(null);
                     });
                 } else {
                     console.warn(`${this.description}. Exit code: ${code}.`);
-                    // this.outputChannel.appendLine(`Failed to run: ${this.description}. Exit code: ${code}.`);
+                    // this.outputChannel.appendLine(`${this.description}: Failed. Exit code: ${code}.`);
                     hasResolved = true;
-                    resolve(null);
                     outputHandler.handleProcessDone(true).then(() => {
                         hasResolved = true;
+                        this.result.setIsRunningTests(false);
                         resolve(null);
                     });
                 }
