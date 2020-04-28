@@ -62,7 +62,7 @@ export default class ATest {
     }
 
     testResultsShowSingleTest (resultTreeItem: ResultTreeItem) {
-        // resultTreeItem.singleTestOutput.show().then(() => {});
+        resultTreeItem.show().then(() => {});
     }
 
     testResultsReRunSingleTest (resultTreeItem: ResultTreeItem) {
@@ -82,7 +82,7 @@ export default class ATest {
     }
 
     testResultsShowTestSetFailureMessages (resultTreeItem: ResultTreeItem) {
-        // testOutputSetTreeItem.testOutputSet.logFailures().then(() => {});
         // vscode.window.showInformationMessage('testResultsShowTestSetFailureMessages - not implemented yet.');
+        resultTreeItem.showTestResults().then(() => {});
     }
 }

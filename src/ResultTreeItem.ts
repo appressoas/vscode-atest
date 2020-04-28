@@ -16,6 +16,12 @@ export type TResultTreeItemContext = {
     container: IResultTreeItemContainer;
 }
 
+const OUTPUT_LOG_NAME = 'ATest: Test output';
+
+function getOutputLogChannel() {
+    return vscode.window.createOutputChannel(OUTPUT_LOG_NAME);
+}
+
 export class ResultTreeItem extends vscode.TreeItem {
     context: TResultTreeItemContext;
 
@@ -341,6 +347,72 @@ export class ResultTreeItem extends vscode.TreeItem {
 
     toJson () {
         return JSON.stringify(this.toPlainObject(), null, 2);
+    }
+
+    async navigateTo () {
+        if (this.fileFsUri) {
+            const document = await vscode.workspace.openTextDocument(this.fileFsUri);
+            await vscode.window.showTextDocument(document, {
+                selection: new vscode.Range(this.line || 0, 0, this.line || 0, 0)
+            });
+        } else {
+            throw new Error('Can not use navigateTo() on ResultTreeItem without a fileFsUri.')
+        }
+    }
+
+    get testResultMessage(): string {
+        if (this.isFailedTest) {
+            if (this.failureMessage) {
+                return this.failureMessage;
+            } else {
+                return 'No failure message';
+            }
+        } else if (this.isPassedTest) {
+            return 'Passed!';
+        }
+        return '';
+    }
+
+    get dottedCodePath() {
+        return this.codePath.join('.');
+    }
+
+    get summaryHeading() {
+        return `File: ${this.fileFsUri?.fsPath}\nCode path: ${this.dottedCodePath}`;
+    }
+
+    get compactTestSummary(): string {
+        return `${this.summaryHeading}\n\n${this.testResultMessage}\n`
+    }
+
+    get verboseTestSummary(): string {
+        return `\n${'='.repeat(70)}\n${this.summaryHeading}\n\n${this.testResultMessage}\n\n\n`
+    }
+
+    logTestResult (outputChannel: vscode.OutputChannel, verbose=false) {
+        if (this.isTest) {
+            if (verbose) {
+                outputChannel.append(`${this.verboseTestSummary}`);
+            } else {
+                outputChannel.append(`${this.compactTestSummary}`);
+            }
+        } else {
+            for (let child of this.children.values()) {
+                child.logTestResult(outputChannel, verbose);
+            }
+        }
+    }
+
+    async showTestResults () {
+        const outputChannel = getOutputLogChannel();
+        outputChannel.clear();
+        outputChannel.show();
+        this.logTestResult(outputChannel, !this.isTest);
+    }
+
+    async show () {
+        await this.showTestResults();
+        await this.navigateTo();
     }
 }
 
