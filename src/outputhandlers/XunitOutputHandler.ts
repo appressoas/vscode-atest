@@ -48,7 +48,6 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
         resultItem.fileFsUri = this.workspaceFolderHelper.absoluteFsUri(attributes.file);
         resultItem.line = parseInt(attributes.line, 10);
         resultItem.failureMessage = failureMessage;
-        resultItem.failureMessage = failureMessage;
         resultItem.testSuitePath = testSuiteName?.split('.');
         resultItem.testCasePath = attributes.classname.split('.');
         resultItem.testPath = [attributes.name];
@@ -82,8 +81,12 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
             // console.log(this.testOutputSet.toPlainObject());
             // console.log('DONE. Result: ', this.testOutputSet.toJson());
             // this.outputChannel.append(`DONE. Result:\n${this.testOutputSet.toJson()}`);
-            this.result.optimize();
+            this.result.rootItem.optimize();
+            this.result.rootItem.refresh();
             this.result.refresh();
+            console.log('PLAIN result', this.result.toJson());
+            console.log('PLAIN rootItem', this.result.rootItem.toJson());
+            // this.result.optimize();
         });
     }
 }

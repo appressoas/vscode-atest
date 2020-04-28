@@ -9,6 +9,7 @@ class FancyTestCase(unittest.TestCase):
 
     def test_fancy_hello_wrong(self):
         self.assertEqual(fancy.fancy_hello(who='Person'), 'Hello Fancy World')
+        pass
 
     def test_fancy_hello_who(self):
         self.assertEqual(fancy.fancy_hello(who='Person'), 'Hello Fancy Person')
@@ -18,10 +19,11 @@ class FancyTestCase(unittest.TestCase):
 
     def test_fancy_hi_wrong(self):
         self.assertEqual(fancy.fancy_hi(who='Person'), 'Hi Fancy World')
+        pass
 
     def test_fancy_hi_who(self):
         self.assertEqual(fancy.fancy_hi(who='Person'), 'Hi Fancy Person')
 
     def test_fancy_crashes(self):
-        # raise Exception('Crashing ...')
+        raise Exception('Crashing ...')
         pass

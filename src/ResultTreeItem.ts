@@ -42,7 +42,7 @@ export class ResultTreeItem extends vscode.TreeItem {
     status: EResultTreeItemStatus;
 
     // Code path to what this is a result for as an array.
-    private _codePath: Array<string>;
+    _codePath: Array<string>;
     
     // Absolute path to the file that was the target of this test run.
     fileFsUri?: vscode.Uri;
@@ -82,25 +82,24 @@ export class ResultTreeItem extends vscode.TreeItem {
     // tests are run.
     failedTestCount: number;
 
-    private _isOptimized: boolean;
+    _isOptimized: boolean;
 
-    private _isRunningTests: boolean;
+    _isRunningTests: boolean;
 
     constructor(context: TResultTreeItemContext, codePath: string[], resultType: EResultTreeItemType) {
         super('x');  // NOTE: setCodePath sets the label, so it will not be 'x'
         this._codePath = [];  // Just to get typescript to shut up - we set it right below!
-        this.setCodePath(codePath);
-        this.context = context;
         this.resultType = resultType;
+        this.context = context;
         this.testCount = 0;
         this.failedTestCount = 0;
+        this._isOptimized = false;
+        this._isRunningTests = false;
         this.status = EResultTreeItemStatus.Done;
         this.children = new Map<string, ResultTreeItem>();
         this.failedChildren = new Map<string, ResultTreeItem>();
-        // this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+        this.setCodePath(codePath);
         this._setCollapsibleState();
-        this._isOptimized = false;
-        this._isRunningTests = false;
     }
 
     refresh (): void {
@@ -193,6 +192,9 @@ export class ResultTreeItem extends vscode.TreeItem {
         this._codePath = codePath;
         if (this._codePath.length === 0) {
             this.label = undefined;
+            if (this.resultType === EResultTreeItemType.WorkspaceFolder) {
+                this.label = `${this.context.workspaceFolder.name}:${this.context.runnerName}`;
+            }
         } else {
             this.label = this._codePath[this._codePath.length - 1]
         }
@@ -214,10 +216,35 @@ export class ResultTreeItem extends vscode.TreeItem {
         return this.resultType === EResultTreeItemType.Test;
     }
 
+    mergeFrom(resultTreeItem: ResultTreeItem) {
+        this.children = resultTreeItem.children;
+        this.failedChildren = resultTreeItem.failedChildren;
+        this.resultType = resultTreeItem.resultType;
+        this.status = resultTreeItem.status;
+        this._codePath = resultTreeItem._codePath;
+        this.fileFsUri = resultTreeItem.fileFsUri;
+        this.folderFsUri = resultTreeItem.folderFsUri;
+        this.line = resultTreeItem.line;
+        this.testSuitePath = resultTreeItem.testSuitePath;
+        this.testCasePath = resultTreeItem.testCasePath;
+        this.testPath = resultTreeItem.testPath;
+        this.failureMessage = resultTreeItem.failureMessage;
+        this.testCount = resultTreeItem.testCount;
+        this.failedTestCount = resultTreeItem.failedTestCount;
+        this.label = resultTreeItem.label;
+        this._isOptimized = resultTreeItem._isOptimized;
+        this._validate();
+    }
+
     _addChild (resultTreeItemToAdd: ResultTreeItem) {
-        resultTreeItemToAdd.parent = this;
-        this.children.set(resultTreeItemToAdd.name, resultTreeItemToAdd);
-        resultTreeItemToAdd._validate();
+        const existingChild: ResultTreeItem|undefined = this.children.get(resultTreeItemToAdd.name);
+        if (existingChild) {
+            existingChild.mergeFrom(resultTreeItemToAdd);
+        } else {
+            resultTreeItemToAdd.parent = this;
+            this.children.set(resultTreeItemToAdd.name, resultTreeItemToAdd);
+            resultTreeItemToAdd._validate();
+        }
     }
 
     _validate () {
@@ -252,15 +279,45 @@ export class ResultTreeItem extends vscode.TreeItem {
         }
     }
 
-    add (resultTreeItemToAdd: ResultTreeItem) {
+    findCommonCodePath(otherResultTreeItem: ResultTreeItem): string[] {
+        const commonCodePath: string[] = [];
+        let index = 0;
+        for(let myCodePathItem of this.codePath) {
+            if (otherResultTreeItem.codePath.length >= index + 1) {
+                let otherCodePathItem = otherResultTreeItem.codePath[index];
+                if (myCodePathItem === otherCodePathItem) {
+                    commonCodePath.push(myCodePathItem);
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+            index ++;
+        }
+        return commonCodePath;
+    }
+
+    add(resultTreeItemToAdd: ResultTreeItem) {
         // TODO: Merge code paths.
         // E.g.: This can be added to something that has a codepath.
         // Require that their codepath prefix match!
         if (!resultTreeItemToAdd.codePath || resultTreeItemToAdd.codePath.length < 1) {
             throw new Error('resultTreeItemToAdd must have a codePath.')
         }
-        // this.outputs.push(testOutput);
-        this._recursiveAddByCodePath(resultTreeItemToAdd, 0);
+        const commonCodePath = this.findCommonCodePath(resultTreeItemToAdd);
+        console.log(`add ${resultTreeItemToAdd.dottedCodePath} to ${this.dottedCodePath} (${commonCodePath.join('.')})`);
+        console.log(`${commonCodePath.length} --- ${resultTreeItemToAdd.codePath.length}`)
+        if (commonCodePath.length === resultTreeItemToAdd.codePath.length) {
+            this.mergeFrom(resultTreeItemToAdd);
+            return;
+        }
+
+        let codePathIndex = 0;
+        if (commonCodePath.length > 0) {
+            codePathIndex = commonCodePath.length - 1;
+        }
+        this._recursiveAddByCodePath(resultTreeItemToAdd, codePathIndex);
     }
 
     makeResultTreeItem(codePath: string[]) {
@@ -270,7 +327,7 @@ export class ResultTreeItem extends vscode.TreeItem {
     optimize(): ResultTreeItem {
         this._isOptimized = true;
         for (let childItem of this.children.values()) {
-            const newChildItem = childItem.optimize();
+            childItem.optimize();
         }
 
         this.failedTestCount = 0;
@@ -338,6 +395,9 @@ export class ResultTreeItem extends vscode.TreeItem {
             status: this.status,
             _isOptimized: this._isOptimized
         };
+        if (this.isTest) {
+            data.isFailedTest = this.isFailedTest;
+        }
         if (this._isOptimized) {
             data.failedChildren = childrenToPlain(this.failedChildren);
             data.failedTestCount = this.failedTestCount
@@ -420,6 +480,6 @@ export class ResultTreeItem extends vscode.TreeItem {
 
 export class WorkspaceFolderResultTreeItem extends ResultTreeItem {
     constructor(context: TResultTreeItemContext) {
-        super(context, [`${context.workspaceFolder.name}:${context.runnerName}`], EResultTreeItemType.WorkspaceFolder);
+        super(context, [], EResultTreeItemType.WorkspaceFolder);
     }
 }
