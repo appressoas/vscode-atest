@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { EResultTreeItemType, EResultTreeItemStatus } from './types';
 import PyTestRunner from './runners/PyTestRunner';
@@ -87,7 +88,8 @@ export class ResultTreeItem extends vscode.TreeItem {
         this.status = EResultTreeItemStatus.Done;
         this.children = new Map<string, ResultTreeItem>();
         this.failedChildren = new Map<string, ResultTreeItem>();
-        this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+        // this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+        this._setCollapsibleState();
         this._isOptimized = false;
     }
 
@@ -103,35 +105,63 @@ export class ResultTreeItem extends vscode.TreeItem {
         }        
     }
 
-    // get contextValue () {
-    //     if (this.singleTestOutput.isFailure) {
-    //         return 'atestFailedSingleTest';
-    //     } else {
-    //         return 'atestPassedSingleTest';
-    //     }
-    // }
+    get containsFailed () {
+        if (this._isOptimized && this.failedTestCount > 0) {
+            return true;
+        }
+        return false;
+    }
 
-    // get description(): string {
-    //     if (this.singleTestOutput.isFailure) {
-    //         return 'FAILED'
-    //     } else {
-    //         return 'Passed'
-    //     }
-    // }
+    get contextValue () {
+        if (this.isFailedTest) {
+            return 'atestFailedSingleTest';
+        } else if (this.isPassedTest) {
+            return 'atestPassedSingleTest';
+        } else if (this.containsFailed) {
+            return 'atestFailedOutputSet';
+        } else {
+            return 'atestPassedOutputSet';
+        }
+    }
 
-    // get iconPath() {
-    //     if (this.singleTestOutput.isFailure) {
-    //         return {
-    //             light: path.join(__filename, '..', '..', 'icons', 'failed.svg'),
-    //             dark: path.join(__filename, '..', '..', 'icons', 'failed.svg')
-    //         }
-    //     } else {
-    //             return {
-    //                 light: path.join(__filename, '..', '..', 'icons', 'passed.svg'),
-    //                 dark: path.join(__filename, '..', '..', 'icons', 'passed.svg')
-    //             }
-    //     }
-    // }
+    get description(): string {
+        if (this.isFailedTest) {
+            return 'FAILED';
+        } else if (this.isPassedTest) {
+            return 'Passed';
+        } else if (this._isOptimized) {
+            if (this.containsFailed) {
+                return `${this.failedTestCount} / ${this.testCount} failed`
+            } else {
+                return 'Passed';
+            }
+        }
+        return '';
+    }
+
+    get iconPath() {
+        if (this.isFailedTest || this._isOptimized && this.containsFailed) {
+            return {
+                light: path.join(__filename, '..', '..', 'icons', 'failed.svg'),
+                dark: path.join(__filename, '..', '..', 'icons', 'failed.svg')
+            }
+        } else if (this.isPassedTest || this._isOptimized && !this.containsFailed) {
+            return {
+                light: path.join(__filename, '..', '..', 'icons', 'passed.svg'),
+                dark: path.join(__filename, '..', '..', 'icons', 'passed.svg')
+            }
+        }
+    }
+
+    private _setCollapsibleState () {
+        if (this.isTest) {
+            this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+        } else if (this.failedTestCount > 0 || !this._isOptimized || this.resultType === EResultTreeItemType.WorkspaceFolder) {
+            this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+        } else {
+            this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+        }
+    }
 
     get name (): string {
         return this.label || 'UNNAMED';
@@ -219,12 +249,6 @@ export class ResultTreeItem extends vscode.TreeItem {
         this._isOptimized = true;
         for (let childItem of this.children.values()) {
             const newChildItem = childItem.optimize();
-
-        //     // Handle the case where we the child has merged itself into its only child
-        //     if (newChildItem !== childItem) {
-        //         this.children.delete(childItem.name);
-        //         this._addChild(newChildItem);
-        //     }
         }
 
         this.failedTestCount = 0;
@@ -239,27 +263,42 @@ export class ResultTreeItem extends vscode.TreeItem {
             this.failedTestCount += 1;
         }
 
-        // if (this.children.size === 1) {
-        //     // Because of the code in the loop at the top of the method,
-        //     // this means that we remove "this" from the tree, and
-        //     // replace it with a child.
-        //     const firstChild = this.children.values().next().value;
-        //     firstChild.parent = this.parent;
-        //     return firstChild;
-        // }
+        this._setCollapsibleState();
+        this.label = this.flattenedLabel;
         return this;
     }
 
-    get flatSelf (): ResultTreeItem {
-        if (this.children.size === 1) {
-            return this.children.values().next().value.flatSelf;
+    get flattenedLabel () {
+        let parent = this.parent;
+        if (parent && parent.canBeFlattened) {
+            const labelList = [this.name];
+            while (parent && parent.canBeFlattened) {
+                labelList.unshift(parent.name);
+                parent = parent.parent;
+            }
+            return labelList.join('.');
+        }
+        return this.name;
+    }
+
+    get canBeFlattened () {
+        return this._isOptimized && this.resultType !== EResultTreeItemType.WorkspaceFolder &&  this.children.size === 1;
+    }
+
+    get flattened (): ResultTreeItem {
+        if (this.canBeFlattened) {
+            return this.children.values().next().value.flattened;
         }
         return this;
     }
 
-    // get flatChildren () {
-    //     const children = [];
-    // }
+    get flattenedChildren () {
+        const flattenedChildren = [];
+        for (let child of this.children.values()) {
+            flattenedChildren.push(child.flattened);
+        }
+        return flattenedChildren;
+    }
 
     toPlainObject () {
         function childrenToPlain (children: Map<string, ResultTreeItem>) {

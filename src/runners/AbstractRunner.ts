@@ -4,7 +4,6 @@ import AbstractOutputHandler from "../outputhandlers/AbstractOutputHandler";
 import WorkspaceFolderHelper from '../WorkspaceFolderHelper';
 import { TExecutable } from '../types';
 import { ResultTreeItem } from '../ResultTreeItem';
-import DumbLogOutputHandler from '../outputhandlers/DumbLogOutputHandler';
 
 export class RunnerError extends Error {
     constructor(public runner: AbstractRunner, public error: Error|null = null) {
