@@ -9,20 +9,16 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('"atest" extension is active');
 
 	let atest = new ATest();
-	context.subscriptions.push(vscode.commands.registerCommand('atest.runTestAtCursor', () => {
-		atest.runTestAtCursor();
-	}));
+	// context.subscriptions.push(vscode.commands.registerCommand('atest.runTestAtCursor', () => {
+	// 	atest.runTestAtCursor();
+	// }));
 	context.subscriptions.push(vscode.commands.registerCommand('atest.runTestsInCurrentFile', () => {
 		atest.runTestsInCurrentFile();
 	}));
 	context.subscriptions.push(vscode.commands.registerCommand('atest.runTestsInFolder', (folderUri: vscode.Uri) => {
-		// console.log('typeof folderUri', typeof folderUri);
-		// console.log('folderUri', folderUri);
 		atest.runTestsInFolder(folderUri);
 	}));
 	context.subscriptions.push(vscode.commands.registerCommand('atest.runTestsInFile', (fileUri: vscode.Uri) => {
-		// console.log('typeof fileUri', typeof fileUri);
-		// console.log('fileUri', fileUri);
 		atest.runTestsInFile(fileUri);
 	}));
 

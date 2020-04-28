@@ -140,9 +140,9 @@ export class ResultTreeItem extends vscode.TreeItem {
         } else if (this.isPassedTest) {
             return 'atestPassedSingleTest';
         } else if (this.containsFailed) {
-            return 'atestFailedOutputSet';
+            return 'atestFailedTestSet';
         } else {
-            return 'atestPassedOutputSet';
+            return 'atestPassedTestSet';
         }
     }
 
@@ -398,7 +398,9 @@ export class ResultTreeItem extends vscode.TreeItem {
             }
         } else {
             for (let child of this.children.values()) {
-                child.logTestResult(outputChannel, verbose);
+                if (child.failedTestCount > 0) {
+                    child.logTestResult(outputChannel, verbose);
+                }
             }
         }
     }

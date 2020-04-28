@@ -34,9 +34,9 @@ export default class ATest {
         }
     }
 
-    runTestAtCursor () {
-        vscode.window.showInformationMessage('run test at cursor - not implemented yet.');
-    }
+    // runTestAtCursor () {
+    //     vscode.window.showInformationMessage('run test at cursor - not implemented yet.');
+    // }
 
     runTestsInCurrentFile () {
         const currentFileUri = vscode.window.activeTextEditor?.document.uri;

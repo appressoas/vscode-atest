@@ -28,10 +28,6 @@
     "contributes": {
         "commands": [
             {
-                "command": "atest.runTestAtCursor",
-                "title": "ATest: Run test at cursor"
-            },
-            {
                 "command": "atest.runTestsInCurrentFile",
                 "title": "ATest: Run tests in current file"
             },
@@ -91,11 +87,11 @@
                 },
                 {
                     "command": "atest.testResultsReRunTestSet",
-                    "when": "view == aTestTestResults && viewItem == atestPassedOutputSet || view == aTestTestResults && viewItem == atestFailedOutputSet"
+                    "when": "view == aTestTestResults && viewItem == atestPassedTestSet || view == aTestTestResults && viewItem == atestFailedTestSet"
                 },
                 {
                     "command": "atest.testResultsReRunFailedInTestSet",
-                    "when": "view == aTestTestResults && viewItem == atestFailedOutputSet"
+                    "when": "view == aTestTestResults && viewItem == atestFailedTestSet"
                 },
                 {
                     "command": "atest.testResultsShowSingleTestFailureMessage",
@@ -103,7 +99,7 @@
                 },
                 {
                     "command": "atest.testResultsShowTestSetFailureMessages",
-                    "when": "view == aTestTestResults && viewItem == atestFailedOutputSet"
+                    "when": "view == aTestTestResults && viewItem == atestFailedTestSet"
                 }
             ],
             "commandPalette": [
