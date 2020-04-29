@@ -9,6 +9,11 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('"atest" extension is active');
 
 	let atest = new ATest();
+
+	context.subscriptions.push(vscode.commands.registerCommand('atest.resetCache', () => {
+		atest.resetCache();
+	}));
+
 	// context.subscriptions.push(vscode.commands.registerCommand('atest.runTestAtCursor', () => {
 	// 	atest.runTestAtCursor();
 	// }));

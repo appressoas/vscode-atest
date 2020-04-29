@@ -51,7 +51,7 @@ export default class ATest {
 
     runTestsInFolder (folderUri: vscode.Uri) {
         this._runTestsAtUri(folderUri, (resultTreeItem: ResultTreeItem) => {
-            resultTreeItem.fileFsUri = folderUri;
+            resultTreeItem.folderFsUri = folderUri;
         });
     }
 
@@ -85,5 +85,9 @@ export default class ATest {
     testResultsShowTestSetFailureMessages (resultTreeItem: ResultTreeItem) {
         // vscode.window.showInformationMessage('testResultsShowTestSetFailureMessages - not implemented yet.');
         resultTreeItem.showTestResults().then(() => {});
+    }
+
+    resetCache () {
+        this.testResultsProvider.clear();
     }
 }

@@ -22,7 +22,8 @@
         "onCommand:atest.runTestAtCursor",
         "onCommand:atest.runTestsInCurrentFile",
         "onCommand:atest.runTestsInFolder",
-        "onCommand:atest.runTestsInFile"
+        "onCommand:atest.runTestsInFile",
+        "onCommand:atest.resetCache"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -38,6 +39,10 @@
             {
                 "command": "atest.runTestsInFile",
                 "title": "ATest: Run all tests in file"
+            },
+            {
+                "command": "atest.resetCache",
+                "title": "ATest: Reset test output cache"
             },
             {
                 "command": "atest.testResultsShowSingleTest",
