@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import XunitOutputHandler from '../../../outputhandlers/XunitOutputHandler';
 import { MockResultTreeItem } from '../../mocks';
-import { ResultTreeItem } from '../../../ResultTreeItem';
 import { EResultTreeItemType } from '../../../types';
 
 class MockXunitOutputHandlerSingleTestThatFails extends XunitOutputHandler {
@@ -83,7 +82,7 @@ suite('XunitOutputHandler Test Suite', () => {
 	test('handleProcessDone single failed test', () => {
 		const outputHandler = new MockXunitOutputHandlerSingleTestThatFails();
 		return outputHandler.handleProcessDone().then(() => {
-			console.log(outputHandler.result.toPlainObject());
+			// console.log(outputHandler.result.toPlainObject());
 
 			// Make sure the stuff not relating to failed is OK
 			assert.equal(outputHandler.result.testCount, 1);

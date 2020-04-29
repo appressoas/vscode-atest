@@ -1,9 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { EResultTreeItemType, EResultTreeItemStatus } from './types';
-import PyTestRunner from './runners/PyTestRunner';
-import GenericRunner from './runners/GenericRunner';
-import WorkspaceFolderHelper from './WorkspaceFolderHelper';
 import { RUNNER_REGISTRY } from './runners/RunnerRegistry';
 
 export interface IResultTreeItemContainer {
@@ -121,10 +118,6 @@ export class ResultTreeItem extends vscode.TreeItem {
         resultTreeItem.name = this.name;
         resultTreeItem.fileRelativeCodePath = this.fileRelativeCodePath;
         resultTreeItem.fullCodePath = this.fullCodePath;
-        resultTreeItem.failureMessage = this.failureMessage;
-        // resultTreeItem.testCount = this.testCount;
-        // resultTreeItem.failedTestCount = this.failedTestCount;
-        // resultTreeItem.label = this.label;
         return resultTreeItem;
     }
 
@@ -219,37 +212,6 @@ export class ResultTreeItem extends vscode.TreeItem {
         return this.resultType === EResultTreeItemType.Test;
     }
 
-    // mergeFrom(resultTreeItem: ResultTreeItem) {
-    //     if (this.dottedPath !== resultTreeItem.dottedPath) {
-    //         throw new Error('mergeFrom(), requires source and target to have the same path.');
-    //     }
-    //     this.children = resultTreeItem.children;
-    //     this.failedChildren = resultTreeItem.failedChildren;
-    //     this.resultType = resultTreeItem.resultType;
-    //     this.status = resultTreeItem.status;
-    //     this.fileFsUri = resultTreeItem.fileFsUri;
-    //     this.folderFsUri = resultTreeItem.folderFsUri;
-    //     this.line = resultTreeItem.line;
-    //     this.fullCodePath = resultTreeItem.fullCodePath;
-    //     this.fileRelativeCodePath = resultTreeItem.fileRelativeCodePath;
-    //     this.failureMessage = resultTreeItem.failureMessage;
-    //     this.testCount = resultTreeItem.testCount;
-    //     this.failedTestCount = resultTreeItem.failedTestCount;
-    //     this.label = resultTreeItem.label;
-    //     this._isOptimized = resultTreeItem._isOptimized;
-    // }
-
-    // _addChild (resultTreeItemToAdd: ResultTreeItem) {
-    //     const existingChild: ResultTreeItem|undefined = this.children.get(resultTreeItemToAdd.name);
-    //     if (existingChild) {
-    //         existingChild.mergeFrom(resultTreeItemToAdd);
-    //     } else {
-    //         resultTreeItemToAdd.parent = this;
-    //         this.children.set(resultTreeItemToAdd.name, resultTreeItemToAdd);
-    //         resultTreeItemToAdd._validate();
-    //     }
-    // }
-
     addChild (resultTreeItem: ResultTreeItem) {
         if (!resultTreeItem.name) {
             throw new Error('addChild requires resultTreeItem with name.')
@@ -334,73 +296,6 @@ export class ResultTreeItem extends vscode.TreeItem {
         }
         return this.getFailedByPathArray(dottedPath.split('.'));
     }
-
-    // _recursiveAddByCodePath(resultTreeItemToAdd: ResultTreeItem, codePathIndex: number) {
-    //     if (!resultTreeItemToAdd.codePath) {
-    //         throw new Error('Should not be possible to get here with an empty codePath!');
-    //     }
-    //     const name = resultTreeItemToAdd.codePath[codePathIndex];
-    //     if (resultTreeItemToAdd.isTest) {
-    //         this.testCount ++;
-    //         // if (resultTreeItemToAdd.resultType === EResultTreeItemType.FailedTest) {
-    //         //     this.failedTestCount ++;
-    //         // }
-    //     }
-    //     if (codePathIndex >= (resultTreeItemToAdd.codePath.length - 1)) {
-    //         this._addChild(resultTreeItemToAdd);
-    //     } else {
-    //         let childToAddTo;
-    //         if (this.children.has(name)) {
-    //             childToAddTo = <ResultTreeItem>this.children.get(name);
-    //         } else {
-    //             const childCodePath = resultTreeItemToAdd.codePath.slice(0, codePathIndex + 1);
-    //             childToAddTo = new ResultTreeItem(this.context, childCodePath, EResultTreeItemType.Generic);
-    //             this._addChild(childToAddTo);
-    //         }
-    //         childToAddTo._recursiveAddByCodePath(resultTreeItemToAdd, codePathIndex + 1);
-    //     }
-    // }
-
-    // findCommonPath(otherResultTreeItem: ResultTreeItem): string[] {
-    //     const commonCodePath: string[] = [];
-    //     let index = 0;
-    //     for(let myCodePathItem of this.codePath) {
-    //         if (otherResultTreeItem.codePath.length >= index + 1) {
-    //             let otherCodePathItem = otherResultTreeItem.codePath[index];
-    //             if (myCodePathItem === otherCodePathItem) {
-    //                 commonCodePath.push(myCodePathItem);
-    //             } else {
-    //                 break;
-    //             }
-    //         } else {
-    //             break;
-    //         }
-    //         index ++;
-    //     }
-    //     return commonCodePath;
-    // }
-
-    // add(resultTreeItemToAdd: ResultTreeItem) {
-    //     // TODO: Merge code paths.
-    //     // E.g.: This can be added to something that has a codepath.
-    //     // Require that their codepath prefix match!
-    //     if (!resultTreeItemToAdd.codePath || resultTreeItemToAdd.codePath.length < 1) {
-    //         throw new Error('resultTreeItemToAdd must have a codePath.')
-    //     }
-    //     const commonCodePath = this.findCommonPath(resultTreeItemToAdd);
-    //     // console.log(`add ${resultTreeItemToAdd.dottedPath} to ${this.dottedPath} (${commonCodePath.join('.')})`);
-    //     // console.log(`${commonCodePath.length} --- ${resultTreeItemToAdd.codePath.length}`)
-    //     if (commonCodePath.length === resultTreeItemToAdd.codePath.length) {
-    //         this.mergeFrom(resultTreeItemToAdd);
-    //         return;
-    //     }
-
-    //     let codePathIndex = 0;
-    //     if (commonCodePath.length > 0) {
-    //         codePathIndex = commonCodePath.length - 1;
-    //     }
-    //     this._recursiveAddByCodePath(resultTreeItemToAdd, codePathIndex);
-    // }
 
     makeResultTreeItem(label: string) {
         return new ResultTreeItem(this.context, label, EResultTreeItemType.Generic);

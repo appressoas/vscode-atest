@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import AbstractOutputHandler from "./AbstractOutputHandler";
-import {SingleTestOutput} from "../TestOutputSet";
 // @ts-ignore
 import * as xml2js from 'xml2js';
 import { EResultTreeItemType } from '../types';
