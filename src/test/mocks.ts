@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { EResultTreeItemType } from '../types';
+import { EResultTreeItemType, TRunnerOptions } from '../types';
 import { ResultTreeItem, IResultTreeItemContainer, WorkspaceFolderResultTreeItem } from '../ResultTreeItem';
 
 
@@ -8,7 +8,7 @@ export class MockResultTreeItemContainer implements IResultTreeItemContainer {
 
     }
 
-    runWorkspaceFolderResultTreeItem (resultTreeItem: WorkspaceFolderResultTreeItem): void {
+    runWorkspaceFolderResultTreeItem (resultTreeItem: WorkspaceFolderResultTreeItem, runnerOptions?: TRunnerOptions): void {
         
     }
 }

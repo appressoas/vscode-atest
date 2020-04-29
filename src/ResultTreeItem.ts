@@ -1,11 +1,11 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { EResultTreeItemType, EResultTreeItemStatus } from './types';
+import { EResultTreeItemType, EResultTreeItemStatus, TRunnerOptions } from './types';
 import { RUNNER_REGISTRY } from './runners/RunnerRegistry';
 
 export interface IResultTreeItemContainer {
     refreshSingleResultTreeItem(resultTreeItem: ResultTreeItem): void;
-    runWorkspaceFolderResultTreeItem (resultTreeItem: WorkspaceFolderResultTreeItem): void;
+    runWorkspaceFolderResultTreeItem (resultTreeItem: WorkspaceFolderResultTreeItem, runnerOptions?: TRunnerOptions): void;
 }
 
 export type TResultTreeItemContext = {
@@ -95,6 +95,16 @@ export class ResultTreeItem extends vscode.TreeItem {
         return this;
     }
 
+    clearResults () {
+        this.failedChildren = new Map<string, ResultTreeItem>();
+        this.children = new Map<string, ResultTreeItem>();
+        this.status = EResultTreeItemStatus.WaitingToStart;
+        this.failureMessage = undefined;
+        this.testCount = 0;
+        this.failedTestCount = 0;
+        this._isOptimized = false;
+    }
+
     setIsRunningTests(isRunningTests: boolean) {
         this.rootItem._isRunningTests = isRunningTests;
     }
@@ -103,9 +113,9 @@ export class ResultTreeItem extends vscode.TreeItem {
         return this.rootItem._isRunningTests;
     }
 
-    run (): Promise<any> {
+    run (runnerOptions?: TRunnerOptions): Promise<any> {
         const runnerClass = RUNNER_REGISTRY.getRunnerClass(this.context.runnerName);
-        return new runnerClass(this).run();
+        return new runnerClass(this, runnerOptions).run();
     }
 
     makeReRunnableResultTreeItem (): WorkspaceFolderResultTreeItem {
@@ -125,6 +135,12 @@ export class ResultTreeItem extends vscode.TreeItem {
         return this.context.container.runWorkspaceFolderResultTreeItem(this.makeReRunnableResultTreeItem());
     }
 
+    reRunFailed () {
+        return this.context.container.runWorkspaceFolderResultTreeItem(this.makeReRunnableResultTreeItem(), {
+            failedOnly: true
+        });
+    }
+
     get containsFailed () {
         if (this._isOptimized && this.failedTestCount > 0) {
             return true;
@@ -138,9 +154,17 @@ export class ResultTreeItem extends vscode.TreeItem {
         } else if (this.isPassedTest) {
             return 'atestPassedSingleTest';
         } else if (this.containsFailed) {
-            return 'atestFailedTestSet';
+            if (this.resultType === EResultTreeItemType.Generic) {
+                return 'atestFailedGenericTestSet';
+            } else {
+                return 'atestFailedTestSet';
+            }
         } else {
-            return 'atestPassedTestSet';
+            if (this.resultType === EResultTreeItemType.Generic) {
+                return 'atestPassedGenericTestSet';
+            } else {
+                return 'atestPassedTestSet';
+            }
         }
     }
 
@@ -153,7 +177,7 @@ export class ResultTreeItem extends vscode.TreeItem {
             if (this.containsFailed) {
                 return `${this.failedTestCount} / ${this.testCount} failed`
             } else {
-                return 'Passed';
+                return 'All passed';
             }
         }
         return '';

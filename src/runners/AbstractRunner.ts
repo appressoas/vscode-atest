@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import AbstractOutputHandler from "../outputhandlers/AbstractOutputHandler";
 import WorkspaceFolderHelper from '../WorkspaceFolderHelper';
-import { TExecutable } from '../types';
+import { TExecutable, TRunnerOptions } from '../types';
 import { ResultTreeItem } from '../ResultTreeItem';
 
 export class RunnerError extends Error {
@@ -18,16 +18,19 @@ export default abstract class AbstractRunner {
     description: string;
     outputChannel: vscode.OutputChannel;
     workspaceFolderHelper: WorkspaceFolderHelper;
+    options: TRunnerOptions;
 
-    constructor (public result: ResultTreeItem) {
+    constructor (public result: ResultTreeItem, options?: TRunnerOptions) {
+        this.options = options || {};
         this.workspaceFolderHelper = new WorkspaceFolderHelper(result.context.workspaceFolder);
         this.outputChannel = vscode.window.createOutputChannel(this.outputChannelName);
         this.executable = this.getExecutable();
         this.executableOptions = this.makeExecutableOptions();
         this.description = this.makeDescription();
         if (this.executable === null) {
-            this.outputChannel.appendLine('No test runner executable provided.');
+            throw new Error('No test runner executable provided.');
         }
+        this.result.clearResults();
     }
     
     protected abstract getExecutable(): TExecutable|null;

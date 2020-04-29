@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { ResultTreeItem, IResultTreeItemContainer, WorkspaceFolderResultTreeItem } from './ResultTreeItem';
+import { TRunnerOptions } from './types';
 
 // https://code.visualstudio.com/api/extension-guides/tree-view
 // https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
@@ -50,9 +51,9 @@ export class TestResultsProvider implements vscode.TreeDataProvider<ResultTreeIt
         return true;
     }
 
-    runWorkspaceFolderResultTreeItem (resultTreeItem: WorkspaceFolderResultTreeItem) {
+    runWorkspaceFolderResultTreeItem (resultTreeItem: WorkspaceFolderResultTreeItem, runnerOptions?: TRunnerOptions) {
         if (this.setWorkspaceFolderResultTreeItem(resultTreeItem)) {
-            resultTreeItem.run()
+            resultTreeItem.run(runnerOptions)
                 .then(() => {})
                 .catch((error: Error) => {
                     vscode.window.showErrorMessage(`Test run failed: ${error.message}`);

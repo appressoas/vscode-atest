@@ -16,6 +16,10 @@ export type TExecutable = {
     env?: {[key: string]: string};
 }
 
+export type TRunnerOptions = {
+    failedOnly?: boolean;
+}
+
 export enum EResultTreeItemType {
     WorkspaceFolder = 'WorkspaceFolder',
     Generic = 'Generic',

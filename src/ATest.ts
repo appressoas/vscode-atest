@@ -75,11 +75,11 @@ export default class ATest {
     }
 
     testResultsReRunTestSet (resultTreeItem: ResultTreeItem) {
-        vscode.window.showInformationMessage('testResultsReRunTestSet - not implemented yet.');
+        resultTreeItem.reRun();
     }
-
+    
     testResultsReRunFailedInTestSet (resultTreeItem: ResultTreeItem) {
-        vscode.window.showInformationMessage('testResultsReRunFailedInTestSet - not implemented yet.');
+        resultTreeItem.reRunFailed();
     }
 
     testResultsShowTestSetFailureMessages (resultTreeItem: ResultTreeItem) {

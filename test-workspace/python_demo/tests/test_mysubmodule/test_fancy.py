@@ -26,4 +26,3 @@ class FancyTestCase(unittest.TestCase):
 
     def test_fancy_crashes(self):
         raise Exception('Crashing ...')
-        pass
