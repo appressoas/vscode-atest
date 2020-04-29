@@ -87,4 +87,8 @@ export default class ATest {
     clearTestOutputList () {
         this.testResultsProvider.clear();
     }
+
+    testResultsToggleShowPassedTests () {
+        this.testResultsProvider.toggleShowPassedTests();
+    }
 }

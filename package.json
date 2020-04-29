@@ -45,6 +45,10 @@
                 "title": "ATest: Clear test output list"
             },
             {
+                "command": "atest.testResultsToggleShowPassedTests",
+                "title": "Toggle show passed tests"
+            },
+            {
                 "command": "atest.testResultsShowSingleTest",
                 "title": "Show"
             },
@@ -78,6 +82,11 @@
                 {
                     "command": "atest.runTestsInFile",
                     "when": "isFileSystemResource && !explorerResourceIsFolder"
+                }
+            ],
+            "view/title": [
+                {
+                    "command": "atest.testResultsToggleShowPassedTests"
                 }
             ],
             "view/item/context": [
@@ -139,6 +148,10 @@
                 },
                 {
                     "command": "atest.testResultsShowTestSetFailureMessages",
+                    "when": "false"
+                },
+                {
+                    "command": "atest.testResultsToggleShowPassedTests",
                     "when": "false"
                 }
             ]

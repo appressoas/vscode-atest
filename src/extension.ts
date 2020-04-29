@@ -47,6 +47,10 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsShowTestSetFailureMessages', (resultTreeItem: ResultTreeItem) => {
 		atest.testResultsShowTestSetFailureMessages(resultTreeItem);
 	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('atest.testResultsToggleShowPassedTests', () => {
+		atest.testResultsToggleShowPassedTests();
+	}));
 }
 
 // this method is called when your extension is deactivated

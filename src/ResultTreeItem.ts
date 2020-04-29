@@ -175,9 +175,9 @@ export class ResultTreeItem extends vscode.TreeItem {
             return 'Passed';
         } else if (this._isOptimized) {
             if (this.containsFailed) {
-                return `${this.failedTestCount} / ${this.testCount} failed`
+                return `${this.failedTestCount} / ${this.testCount} failed`;
             } else {
-                return 'All passed';
+                return `${this.testCount} / ${this.testCount} passed`;
             }
         }
         return '';
@@ -454,6 +454,23 @@ export class ResultTreeItem extends vscode.TreeItem {
         const flattenedChildren = [];
         for (let child of this.children.values()) {
             flattenedChildren.push(child.flattened);
+        }
+        return flattenedChildren;
+    }
+
+    get flattenedFailed (): ResultTreeItem {
+        if (this.canBeFlattened) {
+            const children = this._isOptimized? this.failedChildren : this.children;
+            return children.values().next().value.flattened;
+        }
+        return this;
+    }
+
+    get flattenedFailedChildren () {
+        const flattenedChildren = [];
+        const children = this._isOptimized? this.failedChildren : this.children;
+        for (let child of children.values()) {
+            flattenedChildren.push(child.flattenedFailed);
         }
         return flattenedChildren;
     }

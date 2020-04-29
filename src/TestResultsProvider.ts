@@ -10,12 +10,19 @@ export class TestResultsProvider implements vscode.TreeDataProvider<ResultTreeIt
     readonly onDidChangeTreeData: vscode.Event<ResultTreeItem|undefined> = this._onDidChangeTreeData.event;
     workspaceFolderResultTreeItemMap: Map<string, WorkspaceFolderResultTreeItem>;
     treeView: vscode.TreeView<ResultTreeItem>;
+    showPassedTests: boolean;
 
     constructor () {
         this.workspaceFolderResultTreeItemMap = new Map<string, WorkspaceFolderResultTreeItem>();
+        this.showPassedTests = false;
         this.treeView = vscode.window.createTreeView('aTestTestResults', {
             treeDataProvider: this
         });
+    }
+
+    toggleShowPassedTests () {
+        this.showPassedTests = !this.showPassedTests;
+        this.refresh();
     }
   
     refresh(): void {
@@ -76,7 +83,11 @@ export class TestResultsProvider implements vscode.TreeDataProvider<ResultTreeIt
         }
         if (resultTreeItem) {
             // console.log(resultTreeItem.toJson());
-            return Promise.resolve(resultTreeItem.flattenedChildren);
+            if (this.showPassedTests) {
+                return Promise.resolve(resultTreeItem.flattenedChildren);
+            } else {
+                return Promise.resolve(resultTreeItem.flattenedFailedChildren);
+            }
         } else {
             return Promise.resolve(Array.from(this.workspaceFolderResultTreeItemMap.values()));
         }
