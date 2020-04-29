@@ -1,0 +1,10 @@
+{
+  "name": "jest_demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^25.5.1",
+    "jest-junit": "^10.0.0"
+  }
+}

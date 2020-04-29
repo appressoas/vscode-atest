@@ -1,0 +1,1 @@
+JEST_JUNIT_OUTPUT_NAME=tull.xml JEST_JUNIT_SUITE_NAME="{filepath}" node_modules/.bin/jest --ci --reporters=default --reporters=jest-junit
