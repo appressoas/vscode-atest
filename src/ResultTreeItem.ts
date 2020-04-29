@@ -8,6 +8,7 @@ import { RUNNER_REGISTRY } from './runners/RunnerRegistry';
 
 export interface IResultTreeItemContainer {
     refreshSingleResultTreeItem(resultTreeItem: ResultTreeItem): void;
+    runWorkspaceFolderResultTreeItem (resultTreeItem: WorkspaceFolderResultTreeItem): void;
 }
 
 export type TResultTreeItemContext = {
@@ -40,9 +41,6 @@ export class ResultTreeItem extends vscode.TreeItem {
     
     // The status of this item.
     status: EResultTreeItemStatus;
-
-    // Code path to what this is a result for as an array.
-    _codePath: Array<string>;
     
     // Absolute path to the file that was the target of this test run.
     fileFsUri?: vscode.Uri;
@@ -53,22 +51,9 @@ export class ResultTreeItem extends vscode.TreeItem {
     // Line number in ``fileFsPath`` where the test is located.
     line?: number;
 
-    // The name of the test suite. Used when re-running tests,
-    // and the format is highly language and test-runner dependent.
-    // Typically the code path to the test suite class/module.
-    testSuitePath?: string[];
-
-    // The name of the test case. Used when re-running tests,
-    // and the format is highly language and test-runner dependent.
-    // Typically the code path to the test case class, or the relative code
-    // path from the ``testSuitePath``.
-    testCasePath?: string[];
-
-    // The path of the test. Used when re-running tests,
-    // and the format is highly language and test-runner dependent.
-    // Typically the code path to the test case function/method, or the relative code
-    // path from the ``testCasePath``.
-    testPath?: string[];
+    name: string;
+    fullCodePath?: string[];
+    fileRelativeCodePath?: string[];
 
     // Failure message (if the test failed). Only used if resultType is EResultTreeItemType.Test.
     // If this is set (not undefined), it means that the test failed.
@@ -86,9 +71,10 @@ export class ResultTreeItem extends vscode.TreeItem {
 
     _isRunningTests: boolean;
 
-    constructor(context: TResultTreeItemContext, codePath: string[], resultType: EResultTreeItemType) {
-        super('x');  // NOTE: setCodePath sets the label, so it will not be 'x'
-        this._codePath = [];  // Just to get typescript to shut up - we set it right below!
+    constructor(context: TResultTreeItemContext, name: string, resultType: EResultTreeItemType) {
+        super(name);
+        // this.label = name;
+        this.name = name;
         this.resultType = resultType;
         this.context = context;
         this.testCount = 0;
@@ -98,7 +84,6 @@ export class ResultTreeItem extends vscode.TreeItem {
         this.status = EResultTreeItemStatus.Done;
         this.children = new Map<string, ResultTreeItem>();
         this.failedChildren = new Map<string, ResultTreeItem>();
-        this.setCodePath(codePath);
         this._setCollapsibleState();
     }
 
@@ -124,6 +109,27 @@ export class ResultTreeItem extends vscode.TreeItem {
     run (): Promise<any> {
         const runnerClass = RUNNER_REGISTRY.getRunnerClass(this.context.runnerName);
         return new runnerClass(this).run();
+    }
+
+    makeReRunnableResultTreeItem (): WorkspaceFolderResultTreeItem {
+        const resultTreeItem = new WorkspaceFolderResultTreeItem(this.context);
+        resultTreeItem.children = this.children;
+        resultTreeItem.failedChildren = this.failedChildren;
+        resultTreeItem.fileFsUri = this.fileFsUri;
+        resultTreeItem.folderFsUri = this.folderFsUri;
+        resultTreeItem.line = this.line;
+        resultTreeItem.name = this.name;
+        resultTreeItem.fileRelativeCodePath = this.fileRelativeCodePath;
+        resultTreeItem.fullCodePath = this.fullCodePath;
+        resultTreeItem.failureMessage = this.failureMessage;
+        // resultTreeItem.testCount = this.testCount;
+        // resultTreeItem.failedTestCount = this.failedTestCount;
+        // resultTreeItem.label = this.label;
+        return resultTreeItem;
+    }
+
+    reRun () {
+        return this.context.container.runWorkspaceFolderResultTreeItem(this.makeReRunnableResultTreeItem());
     }
 
     get containsFailed () {
@@ -184,24 +190,21 @@ export class ResultTreeItem extends vscode.TreeItem {
         }
     }
 
-    get name (): string {
-        return this.label || 'UNNAMED';
-    }
-
-    setCodePath (codePath: string[]) {
-        this._codePath = codePath;
-        if (this._codePath.length === 0) {
-            this.label = undefined;
-            if (this.resultType === EResultTreeItemType.WorkspaceFolder) {
-                this.label = `${this.context.workspaceFolder.name}:${this.context.runnerName}`;
-            }
-        } else {
-            this.label = this._codePath[this._codePath.length - 1]
+    _buildPathArray (pathArray: string[]) {
+        pathArray.unshift(<string>this.name);
+        if (this.parent) {
+            this.parent._buildPathArray(pathArray);
         }
     }
 
-    get codePath () {
-        return this._codePath;
+    get pathArray () {
+        const pathArray: string[] = [];
+        this._buildPathArray(pathArray);
+        return pathArray;
+    }
+
+    get dottedPath() {
+        return this.pathArray.join('.');
     }
 
     get isFailedTest() {
@@ -216,118 +219,202 @@ export class ResultTreeItem extends vscode.TreeItem {
         return this.resultType === EResultTreeItemType.Test;
     }
 
-    mergeFrom(resultTreeItem: ResultTreeItem) {
-        this.children = resultTreeItem.children;
-        this.failedChildren = resultTreeItem.failedChildren;
-        this.resultType = resultTreeItem.resultType;
-        this.status = resultTreeItem.status;
-        this._codePath = resultTreeItem._codePath;
-        this.fileFsUri = resultTreeItem.fileFsUri;
-        this.folderFsUri = resultTreeItem.folderFsUri;
-        this.line = resultTreeItem.line;
-        this.testSuitePath = resultTreeItem.testSuitePath;
-        this.testCasePath = resultTreeItem.testCasePath;
-        this.testPath = resultTreeItem.testPath;
-        this.failureMessage = resultTreeItem.failureMessage;
-        this.testCount = resultTreeItem.testCount;
-        this.failedTestCount = resultTreeItem.failedTestCount;
-        this.label = resultTreeItem.label;
-        this._isOptimized = resultTreeItem._isOptimized;
-        this._validate();
+    // mergeFrom(resultTreeItem: ResultTreeItem) {
+    //     if (this.dottedPath !== resultTreeItem.dottedPath) {
+    //         throw new Error('mergeFrom(), requires source and target to have the same path.');
+    //     }
+    //     this.children = resultTreeItem.children;
+    //     this.failedChildren = resultTreeItem.failedChildren;
+    //     this.resultType = resultTreeItem.resultType;
+    //     this.status = resultTreeItem.status;
+    //     this.fileFsUri = resultTreeItem.fileFsUri;
+    //     this.folderFsUri = resultTreeItem.folderFsUri;
+    //     this.line = resultTreeItem.line;
+    //     this.fullCodePath = resultTreeItem.fullCodePath;
+    //     this.fileRelativeCodePath = resultTreeItem.fileRelativeCodePath;
+    //     this.failureMessage = resultTreeItem.failureMessage;
+    //     this.testCount = resultTreeItem.testCount;
+    //     this.failedTestCount = resultTreeItem.failedTestCount;
+    //     this.label = resultTreeItem.label;
+    //     this._isOptimized = resultTreeItem._isOptimized;
+    // }
+
+    // _addChild (resultTreeItemToAdd: ResultTreeItem) {
+    //     const existingChild: ResultTreeItem|undefined = this.children.get(resultTreeItemToAdd.name);
+    //     if (existingChild) {
+    //         existingChild.mergeFrom(resultTreeItemToAdd);
+    //     } else {
+    //         resultTreeItemToAdd.parent = this;
+    //         this.children.set(resultTreeItemToAdd.name, resultTreeItemToAdd);
+    //         resultTreeItemToAdd._validate();
+    //     }
+    // }
+
+    addChild (resultTreeItem: ResultTreeItem) {
+        if (!resultTreeItem.name) {
+            throw new Error('addChild requires resultTreeItem with name.')
+        }
+        if (this.children.has(resultTreeItem.name)) {
+            throw new Error(`${this.dottedPath} already have a child with this name: "${this.name}".`)
+        }
+        this.children.set(resultTreeItem.name, resultTreeItem);
+        resultTreeItem.parent = this;
     }
 
-    _addChild (resultTreeItemToAdd: ResultTreeItem) {
-        const existingChild: ResultTreeItem|undefined = this.children.get(resultTreeItemToAdd.name);
-        if (existingChild) {
-            existingChild.mergeFrom(resultTreeItemToAdd);
+    addOrReplaceChild(resultTreeItem: ResultTreeItem): boolean {
+        if (!resultTreeItem.name) {
+            throw new Error('addOrReplaceChild requires resultTreeItem with name.')
+        }
+        if (this.children.has(resultTreeItem.name)) {
+            this.children.set(resultTreeItem.name, resultTreeItem);
+            return true;
         } else {
-            resultTreeItemToAdd.parent = this;
-            this.children.set(resultTreeItemToAdd.name, resultTreeItemToAdd);
-            resultTreeItemToAdd._validate();
+            this.addChild(resultTreeItem);
+            return false;
         }
     }
 
-    _validate () {
-        if (this.parent && this.codePath.length === 0) {
-            throw new Error('A ResultTreeItem with a parent must have a codePath.');
+    addChildRecursiveByPath (parentPathArray: string[], resultTreeItem: ResultTreeItem) {
+        if (!resultTreeItem.name) {
+            throw new Error('addOrReplace requires resultTreeItem with name.')
         }
-    }
-
-    _recursiveAddByCodePath(resultTreeItemToAdd: ResultTreeItem, codePathIndex: number) {
-        if (!resultTreeItemToAdd.codePath) {
-            throw new Error('Should not be possible to get here with an empty codePath!');
-        }
-        const name = resultTreeItemToAdd.codePath[codePathIndex];
-        if (resultTreeItemToAdd.isTest) {
-            this.testCount ++;
-            // if (resultTreeItemToAdd.resultType === EResultTreeItemType.FailedTest) {
-            //     this.failedTestCount ++;
-            // }
-        }
-        if (codePathIndex >= (resultTreeItemToAdd.codePath.length - 1)) {
-            this._addChild(resultTreeItemToAdd);
+        if (parentPathArray.length === 0) {
+            this.addOrReplaceChild(resultTreeItem);
         } else {
-            let childToAddTo;
+            const name = parentPathArray[0];
             if (this.children.has(name)) {
-                childToAddTo = <ResultTreeItem>this.children.get(name);
-            } else {
-                const childCodePath = resultTreeItemToAdd.codePath.slice(0, codePathIndex + 1);
-                childToAddTo = new ResultTreeItem(this.context, childCodePath, EResultTreeItemType.Generic);
-                this._addChild(childToAddTo);
+                throw new Error(`${this.dottedPath} already has a ${name} child.`);
             }
-            childToAddTo._recursiveAddByCodePath(resultTreeItemToAdd, codePathIndex + 1);
+            const newChild = this.makeResultTreeItem(name);
+            this.addChild(newChild);
+            newChild.addChildRecursiveByPath(parentPathArray.slice(1), resultTreeItem);
         }
     }
 
-    findCommonCodePath(otherResultTreeItem: ResultTreeItem): string[] {
-        const commonCodePath: string[] = [];
-        let index = 0;
-        for(let myCodePathItem of this.codePath) {
-            if (otherResultTreeItem.codePath.length >= index + 1) {
-                let otherCodePathItem = otherResultTreeItem.codePath[index];
-                if (myCodePathItem === otherCodePathItem) {
-                    commonCodePath.push(myCodePathItem);
-                } else {
-                    break;
-                }
+    getByPathArray (pathArray: string[]): ResultTreeItem|undefined {
+        if (pathArray.length === 0) {
+            return this;
+        }
+        else {
+            const name = pathArray[0];
+            const child = this.children.get(name);
+            if (child) {
+                return child.getByPathArray(pathArray.slice(1));
             } else {
-                break;
+                return undefined;
             }
-            index ++;
         }
-        return commonCodePath;
     }
 
-    add(resultTreeItemToAdd: ResultTreeItem) {
-        // TODO: Merge code paths.
-        // E.g.: This can be added to something that has a codepath.
-        // Require that their codepath prefix match!
-        if (!resultTreeItemToAdd.codePath || resultTreeItemToAdd.codePath.length < 1) {
-            throw new Error('resultTreeItemToAdd must have a codePath.')
+    getByDottedPath (dottedPath: string): ResultTreeItem|undefined {
+        if (dottedPath === '') {
+            return undefined;
         }
-        const commonCodePath = this.findCommonCodePath(resultTreeItemToAdd);
-        console.log(`add ${resultTreeItemToAdd.dottedCodePath} to ${this.dottedCodePath} (${commonCodePath.join('.')})`);
-        console.log(`${commonCodePath.length} --- ${resultTreeItemToAdd.codePath.length}`)
-        if (commonCodePath.length === resultTreeItemToAdd.codePath.length) {
-            this.mergeFrom(resultTreeItemToAdd);
-            return;
-        }
-
-        let codePathIndex = 0;
-        if (commonCodePath.length > 0) {
-            codePathIndex = commonCodePath.length - 1;
-        }
-        this._recursiveAddByCodePath(resultTreeItemToAdd, codePathIndex);
+        return this.getByPathArray(dottedPath.split('.'));
     }
 
-    makeResultTreeItem(codePath: string[]) {
-        return new ResultTreeItem(this.context, codePath, EResultTreeItemType.Generic);
+    getFailedByPathArray (pathArray: string[]): ResultTreeItem|undefined {
+        if (pathArray.length === 0) {
+            return this;
+        }
+        else {
+            const name = pathArray[0];
+            const child = this.failedChildren.get(name);
+            if (child) {
+                return child.getByPathArray(pathArray.slice(1));
+            } else {
+                return undefined;
+            }
+        }
+    }
+
+    getFailedByDottedPath (dottedPath: string): ResultTreeItem|undefined {
+        if (dottedPath === '') {
+            return undefined;
+        }
+        return this.getFailedByPathArray(dottedPath.split('.'));
+    }
+
+    // _recursiveAddByCodePath(resultTreeItemToAdd: ResultTreeItem, codePathIndex: number) {
+    //     if (!resultTreeItemToAdd.codePath) {
+    //         throw new Error('Should not be possible to get here with an empty codePath!');
+    //     }
+    //     const name = resultTreeItemToAdd.codePath[codePathIndex];
+    //     if (resultTreeItemToAdd.isTest) {
+    //         this.testCount ++;
+    //         // if (resultTreeItemToAdd.resultType === EResultTreeItemType.FailedTest) {
+    //         //     this.failedTestCount ++;
+    //         // }
+    //     }
+    //     if (codePathIndex >= (resultTreeItemToAdd.codePath.length - 1)) {
+    //         this._addChild(resultTreeItemToAdd);
+    //     } else {
+    //         let childToAddTo;
+    //         if (this.children.has(name)) {
+    //             childToAddTo = <ResultTreeItem>this.children.get(name);
+    //         } else {
+    //             const childCodePath = resultTreeItemToAdd.codePath.slice(0, codePathIndex + 1);
+    //             childToAddTo = new ResultTreeItem(this.context, childCodePath, EResultTreeItemType.Generic);
+    //             this._addChild(childToAddTo);
+    //         }
+    //         childToAddTo._recursiveAddByCodePath(resultTreeItemToAdd, codePathIndex + 1);
+    //     }
+    // }
+
+    // findCommonPath(otherResultTreeItem: ResultTreeItem): string[] {
+    //     const commonCodePath: string[] = [];
+    //     let index = 0;
+    //     for(let myCodePathItem of this.codePath) {
+    //         if (otherResultTreeItem.codePath.length >= index + 1) {
+    //             let otherCodePathItem = otherResultTreeItem.codePath[index];
+    //             if (myCodePathItem === otherCodePathItem) {
+    //                 commonCodePath.push(myCodePathItem);
+    //             } else {
+    //                 break;
+    //             }
+    //         } else {
+    //             break;
+    //         }
+    //         index ++;
+    //     }
+    //     return commonCodePath;
+    // }
+
+    // add(resultTreeItemToAdd: ResultTreeItem) {
+    //     // TODO: Merge code paths.
+    //     // E.g.: This can be added to something that has a codepath.
+    //     // Require that their codepath prefix match!
+    //     if (!resultTreeItemToAdd.codePath || resultTreeItemToAdd.codePath.length < 1) {
+    //         throw new Error('resultTreeItemToAdd must have a codePath.')
+    //     }
+    //     const commonCodePath = this.findCommonPath(resultTreeItemToAdd);
+    //     // console.log(`add ${resultTreeItemToAdd.dottedPath} to ${this.dottedPath} (${commonCodePath.join('.')})`);
+    //     // console.log(`${commonCodePath.length} --- ${resultTreeItemToAdd.codePath.length}`)
+    //     if (commonCodePath.length === resultTreeItemToAdd.codePath.length) {
+    //         this.mergeFrom(resultTreeItemToAdd);
+    //         return;
+    //     }
+
+    //     let codePathIndex = 0;
+    //     if (commonCodePath.length > 0) {
+    //         codePathIndex = commonCodePath.length - 1;
+    //     }
+    //     this._recursiveAddByCodePath(resultTreeItemToAdd, codePathIndex);
+    // }
+
+    makeResultTreeItem(label: string) {
+        return new ResultTreeItem(this.context, label, EResultTreeItemType.Generic);
     }
 
     optimize(): ResultTreeItem {
         this._isOptimized = true;
+        this.testCount = 0;
+        if (this.isTest) {
+            this.testCount = 1;
+        }
         for (let childItem of this.children.values()) {
             childItem.optimize();
+            this.testCount += childItem.testCount;
         }
 
         this.failedTestCount = 0;
@@ -335,7 +422,7 @@ export class ResultTreeItem extends vscode.TreeItem {
         for (let childItem of this.children.values()) {
             this.failedTestCount += childItem.failedTestCount;
             if (childItem.failedTestCount > 0) {
-                this.failedChildren.set(childItem.name, childItem);
+                this.failedChildren.set(<string>childItem.name, childItem);
             }
         }
         if (this.isFailedTest) {
@@ -357,7 +444,7 @@ export class ResultTreeItem extends vscode.TreeItem {
             }
             return labelList.join('.');
         }
-        return this.name;
+        return this.label;
     }
 
     get canBeFlattened () {
@@ -388,7 +475,11 @@ export class ResultTreeItem extends vscode.TreeItem {
             return out;
         }
         const data: any = {
-            codePath: this.codePath.join('::'),
+            label: this.label,
+            name: this.name,
+            parentDottedPath: this.parent?.dottedPath || 'NONE',
+            hasParent: this.parent? true : false,
+            dottedPath: this.dottedPath,
             resultType: this.resultType,
             children: childrenToPlain(this.children),
             testCount: this.testCount,
@@ -433,12 +524,8 @@ export class ResultTreeItem extends vscode.TreeItem {
         return '';
     }
 
-    get dottedCodePath() {
-        return this.codePath.join('.');
-    }
-
     get summaryHeading() {
-        return `File: ${this.fileFsUri?.fsPath}\nCode path: ${this.dottedCodePath}`;
+        return `File: ${this.fileFsUri?.fsPath}\nCode path: ${this.dottedPath}`;
     }
 
     get compactTestSummary(): string {
@@ -480,6 +567,6 @@ export class ResultTreeItem extends vscode.TreeItem {
 
 export class WorkspaceFolderResultTreeItem extends ResultTreeItem {
     constructor(context: TResultTreeItemContext) {
-        super(context, [], EResultTreeItemType.WorkspaceFolder);
+        super(context, `${context.workspaceFolder.name}:${context.runnerName}`, EResultTreeItemType.WorkspaceFolder);
     }
 }

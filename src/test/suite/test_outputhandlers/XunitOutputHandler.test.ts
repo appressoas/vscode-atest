@@ -4,27 +4,50 @@ import * as vscode from 'vscode';
 import XunitOutputHandler from '../../../outputhandlers/XunitOutputHandler';
 import { MockResultTreeItem } from '../../mocks';
 import { ResultTreeItem } from '../../../ResultTreeItem';
+import { EResultTreeItemType } from '../../../types';
 
-class MockXunitOutputHandlerFull extends XunitOutputHandler {
+class MockXunitOutputHandlerSingleTestThatFails extends XunitOutputHandler {
 	constructor () {
 		super(new MockResultTreeItem(), vscode.window.createOutputChannel('mock'));
 	}
 
     get xunitOutputString(): string {
 		return `<testsuites>
-	<testsuite errors="0" failures="1" hostname="test.local" name="pytest" skipped="0" tests="3" time="0.095" timestamp="2020-04-23T20:18:42.259401">
-		<testcase classname="test_stringutils.test_stuff.TestReplace" file="test_stringutils/test_stuff.py" line="4" name="test_do_stuff" time="0.001"/>
-		<testcase classname="test_stringutils.test_replace.TestReplace" file="test_stringutils/test_replace.py" line="7" name="test_strip_whitespace" time="0.001"/>
-		<testcase classname="test_stringutils.test_replace.TestReplace" file="test_stringutils/test_replace.py" line="10" name="test_will_fail" time="0.001">
-			<failure message="AssertionError: 'Hello World!' != 'Hello' - Hello World! + Hello">self = &lt;test_stringutils.test_replace.TestReplace testMethod=test_will_fail&gt;
-	
-		def test_will_fail(self):
-	&gt;       self.assertEqual(stringutils.Replace('Hello World').replace('World', 'World!'), 'Hello')
-	E       AssertionError: 'Hello World!' != 'Hello'
-	E       - Hello World!
-	E       + Hello
-	
-	python_demo/tests/test_stringutils/test_replace.py:12: AssertionError</failure>
+	<testsuite name="mytestsuite">
+		<testcase classname="test_stringutils.TestReplace" file="test_stringutils/test_replace.py" line="10" name="test_will_fail">
+			<failure message="The failure message">Failure details</failure>
+		</testcase>
+	</testsuite>
+</testsuites>`;
+	}
+}
+
+class MockXunitOutputHandlerSingleTestThatPasses extends XunitOutputHandler {
+	constructor () {
+		super(new MockResultTreeItem(), vscode.window.createOutputChannel('mock'));
+	}
+
+    get xunitOutputString(): string {
+		return `<testsuites>
+	<testsuite name="mytestsuite">
+		<testcase classname="test_stringutils.TestReplace" file="test_stringutils/test_replace.py" line="10" name="test_ok"/>
+	</testsuite>
+</testsuites>`;
+	}
+}
+
+class MockXunitOutputHandlerAdvanced extends XunitOutputHandler {
+	constructor () {
+		super(new MockResultTreeItem(), vscode.window.createOutputChannel('mock'));
+	}
+
+    get xunitOutputString(): string {
+		return `<testsuites>
+	<testsuite name="mytestsuite">
+		<testcase classname="test_stringutils.test_stuff.TestReplace" file="test_stringutils/test_stuff.py" line="4" name="test_do_stuff"/>
+		<testcase classname="test_stringutils.test_replace.TestReplace" file="test_stringutils/test_replace.py" line="7" name="test_strip_whitespace"/>
+		<testcase classname="test_stringutils.test_replace.TestReplace" file="test_stringutils/test_replace.py" line="10" name="test_will_fail">
+			<failure message="The failure message">Failure details</failure>
 		</testcase>
 	</testsuite>
 </testsuites>`;
@@ -34,35 +57,69 @@ class MockXunitOutputHandlerFull extends XunitOutputHandler {
 suite('XunitOutputHandler Test Suite', () => {
 	vscode.window.showInformationMessage('Start XunitOutputHandler tests.');
 
-	test('handleProcessDone', () => {
-		const outputHandler = new MockXunitOutputHandlerFull();
+	test('handleProcessDone single passed test', () => {
+		const outputHandler = new MockXunitOutputHandlerSingleTestThatPasses();
 		return outputHandler.handleProcessDone().then(() => {
-			assert.equal(outputHandler.result.testCount, 3);
-			assert.equal(outputHandler.result.failedTestCount, 1);
+			// console.log(outputHandler.result.toPlainObject());
+			assert.equal(outputHandler.result.testCount, 1);
+			assert.equal(outputHandler.result.failedTestCount, 0);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils')!.resultType, 
+				EResultTreeItemType.Generic);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.TestReplace')!.resultType, 
+				EResultTreeItemType.TestCase);
+			assert(outputHandler.result.getByDottedPath('test_stringutils.TestReplace')!.fileFsUri!.fsPath.endsWith('test_stringutils/test_replace.py'))
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.TestReplace.test_ok')!.resultType, 
+				EResultTreeItemType.Test);
+				assert(outputHandler.result.getByDottedPath('test_stringutils.TestReplace.test_ok')!.fileFsUri!.fsPath.endsWith('test_stringutils/test_replace.py'))
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.TestReplace.test_ok')!.line, 
+				10);
 		});
 	});
 
-	test('handleProcessDone failure mapped correctly', () => {
-		const outputHandler = new MockXunitOutputHandlerFull();
+	test('handleProcessDone single failed test', () => {
+		const outputHandler = new MockXunitOutputHandlerSingleTestThatFails();
 		return outputHandler.handleProcessDone().then(() => {
-			assert(outputHandler.result.failedChildren.has('test_stringutils'))
-			assert(!outputHandler.result.failedChildren.get('test_stringutils')!.failedChildren.has('test_stuff'))
-			assert(outputHandler.result.failedChildren.get('test_stringutils')!.failedChildren.has('test_replace'))
-			assert(
-				outputHandler.result.failedChildren.get('test_stringutils')!.
-				failedChildren.get('test_replace')!.failedChildren.has('TestReplace'))
+			console.log(outputHandler.result.toPlainObject());
 
+			// Make sure the stuff not relating to failed is OK
+			assert.equal(outputHandler.result.testCount, 1);
 			assert.equal(
-				outputHandler.result.failedChildren.get('test_stringutils')!.
-				failedChildren.get('test_replace')!.failedChildren.get('TestReplace')!.
-				failedChildren.size, 1)			
+				outputHandler.result.getByDottedPath('test_stringutils')!.resultType, 
+				EResultTreeItemType.Generic);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.TestReplace')!.resultType, 
+				EResultTreeItemType.TestCase);
+			assert(outputHandler.result.getByDottedPath('test_stringutils.TestReplace')!.fileFsUri!.fsPath.endsWith('test_stringutils/test_replace.py'))
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.TestReplace.test_will_fail')!.resultType, 
+				EResultTreeItemType.Test);
+				assert(outputHandler.result.getByDottedPath('test_stringutils.TestReplace.test_will_fail')!.fileFsUri!.fsPath.endsWith('test_stringutils/test_replace.py'))
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.TestReplace.test_will_fail')!.line, 
+				10);
 
-			const failedChild = <ResultTreeItem>outputHandler.result.failedChildren.get('test_stringutils')?.
-				failedChildren.get('test_replace')?.failedChildren.get('TestReplace')?.
-				failedChildren.get('test_will_fail');
-			assert.equal(failedChild.name, 'test_will_fail')
-			assert(failedChild.isFailedTest)
-			assert.equal(failedChild.line, 10)
+			assert.equal(outputHandler.result.failedTestCount, 1);
+			assert.equal(
+				outputHandler.result.getFailedByDottedPath('test_stringutils')!.resultType, 
+				EResultTreeItemType.Generic);
+			assert.equal(
+				outputHandler.result.getFailedByDottedPath('test_stringutils.TestReplace')!.resultType, 
+				EResultTreeItemType.TestCase);
+			assert(outputHandler.result.getFailedByDottedPath('test_stringutils.TestReplace')!.fileFsUri!.fsPath.endsWith('test_stringutils/test_replace.py'))
+			assert.equal(
+				outputHandler.result.getFailedByDottedPath('test_stringutils.TestReplace.test_will_fail')!.resultType, 
+				EResultTreeItemType.Test);
+				assert(outputHandler.result.getFailedByDottedPath('test_stringutils.TestReplace.test_will_fail')!.fileFsUri!.fsPath.endsWith('test_stringutils/test_replace.py'))
+			assert.equal(
+				outputHandler.result.getFailedByDottedPath('test_stringutils.TestReplace.test_will_fail')!.line, 
+				10);
+			assert.equal(
+				outputHandler.result.getFailedByDottedPath('test_stringutils.TestReplace.test_will_fail')!.failureMessage, 
+				'The failure message\n\nFailure details');
 		});
 	});
 });

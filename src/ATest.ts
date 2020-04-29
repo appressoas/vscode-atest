@@ -67,7 +67,7 @@ export default class ATest {
 
     testResultsReRunSingleTest (resultTreeItem: ResultTreeItem) {
         // vscode.window.showInformationMessage('testResultsReRunSingleTest - not implemented yet.');
-        resultTreeItem.run().then(() => {});
+        resultTreeItem.reRun();
     }
 
     testResultsShowSingleTestFailureMessage (resultTreeItem: ResultTreeItem) {
