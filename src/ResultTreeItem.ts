@@ -347,6 +347,21 @@ export class ResultTreeItem extends vscode.TreeItem {
         return this.getFailedByPathArray(dottedPath.split('.'));
     }
 
+    _getAllFailedTestResultItems (failedTests: ResultTreeItem[]) {
+        if (this.isFailedTest) {
+            failedTests.push(this);
+        }
+        for (let child of this.children.values()) {
+            child._getAllFailedTestResultItems(failedTests);
+        }
+    }
+
+    getAllFailedTestResultItems (): ResultTreeItem[] {
+        const failedTests: ResultTreeItem[] = [];
+        this._getAllFailedTestResultItems(failedTests);
+        return failedTests;
+    }
+
     makeResultTreeItem(label: string) {
         return new ResultTreeItem(this.context, label, EResultTreeItemType.Generic);
     }

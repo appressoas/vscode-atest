@@ -1,9 +1,8 @@
 import * as assert from 'assert';
 
 import * as vscode from 'vscode';
-import { MockResultTreeItem } from '../mocks';
-import { EResultTreeItemType, EResultTreeItemStatus } from '../../types';
-import { ResultTreeItem } from '../../ResultTreeItem';
+import { MockResultTreeItem, MockFailedTestResultTreeItem, MockPassedTestResultTreeItem } from '../mocks';
+import { EResultTreeItemType } from '../../types';
 
 suite('ResultTreeItem Test Suite', () => {
     vscode.window.showInformationMessage('Start ResultTreeItem tests.');
@@ -117,5 +116,30 @@ suite('ResultTreeItem Test Suite', () => {
         assert.equal(root.getClosestExistingParentPathArray(['my', 'fancy', 'other']).join('.'), 'my.fancy');
         assert.equal(root.getClosestExistingParentPathArray(['my', 'fancy', 'test', 'a']).join('.'), 'my.fancy.test');
         assert.equal(root.getClosestExistingParentPathArray(['my', 'fancy', 'test', 'a', 'b', 'c', 'd']).join('.'), 'my.fancy.test');
+    });
+
+    test('getAllFailedTests()', () => {
+        const root = new MockResultTreeItem('mockroot');
+        const fail1 = new MockFailedTestResultTreeItem('fail1');
+        const fail2 = new MockFailedTestResultTreeItem('fail2');
+        const fail3 = new MockFailedTestResultTreeItem('fail3');
+        const fail4 = new MockFailedTestResultTreeItem('fail4');
+        const fail5 = new MockFailedTestResultTreeItem('fail5');
+        root.addChildRecursiveByPath(['a', 'b'], fail1, true);
+        root.addChildRecursiveByPath(['a', 'b'], new MockPassedTestResultTreeItem('pass1'), true);
+        root.addChildRecursiveByPath(['a', 'b'], fail2, true);
+        root.addChildRecursiveByPath(['a', 'x', 'y'], fail3, true);
+        root.addChildRecursiveByPath(['a', 'x', 'y'], new MockPassedTestResultTreeItem('pass2'), true);
+        root.addChildRecursiveByPath(['a'], fail4, true);
+        root.addChildRecursiveByPath(['a'], new MockPassedTestResultTreeItem('pass3'), true);
+        root.addChild(fail5);
+        root.addChild(new MockPassedTestResultTreeItem('pass4'));
+        const failedTests = root.getAllFailedTestResultItems();
+        assert.equal(failedTests.length, 5);
+        assert.equal(failedTests.indexOf(fail1), 0);
+        assert.equal(failedTests.indexOf(fail2), 1);
+        assert.equal(failedTests.indexOf(fail3), 2);
+        assert.equal(failedTests.indexOf(fail4), 3);
+        assert.equal(failedTests.indexOf(fail5), 4);
     });
 });

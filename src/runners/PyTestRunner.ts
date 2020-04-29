@@ -7,11 +7,43 @@ import * as expandHomeDir from 'expand-home-dir';
 import AbstractOutputHandler from "../outputhandlers/AbstractOutputHandler";
 import XunitOutputHandler from "../outputhandlers/XunitOutputHandler";
 import { TExecutable } from "../types";
+import { ResultTreeItem } from "../ResultTreeItem";
 
 
 export default class PyTestRunner extends AbstractRunner {
     static getRunnerName () {
         return 'pytest';
+    }
+
+    get resultTreeItemsToRun(): ResultTreeItem[] {
+        if (this.options.failedOnly) {
+            return this.result.getAllFailedTestResultItems();
+        }
+        return [this.result];
+    }
+
+    makePathToRun(resultTreeItem: ResultTreeItem): string {
+        if (resultTreeItem.fileFsUri) {
+            let pathToRun = this.workspaceFolderHelper.relativeFsPath(resultTreeItem.fileFsUri.fsPath);
+            if (resultTreeItem.fileRelativeCodePath) {
+                pathToRun = `${pathToRun}::${resultTreeItem.fileRelativeCodePath.join('::')}`
+            }
+            return pathToRun;
+        } else if (resultTreeItem.folderFsUri) {
+            return this.workspaceFolderHelper.relativeFsPath(resultTreeItem.folderFsUri.fsPath);
+        } else {
+            // throw new Error('Can not run - no folder or file provided.');
+            this.outputChannel.appendLine(`PyTestRunner can not run: ${resultTreeItem.toJson()}`);
+            throw new Error(`PyTestRunner did not receive any runnable options for ${resultTreeItem.dottedPath}. See the output log for more details.`);
+        }
+    }
+
+    get pathsToRun(): string[] {
+        const pathsToRun: string[] = [];
+        for (let resultTreeItem of this.resultTreeItemsToRun) {
+            pathsToRun.push(this.makePathToRun(resultTreeItem));
+        }
+        return pathsToRun;
     }
 
     protected getExecutable(): TExecutable|null {
@@ -22,27 +54,11 @@ export default class PyTestRunner extends AbstractRunner {
         pythonPath = expandHomeDir(pythonPath);
         const pythonBinPath = path.dirname(<string>pythonPath);
         const pytestPath = path.join(pythonBinPath, 'pytest')
-        let pathToRun;
-        if (this.result.fileFsUri) {
-            pathToRun = this.result.fileFsUri.fsPath;
-            if (this.result.fileRelativeCodePath) {
-                pathToRun = `${pathToRun}::${this.result.fileRelativeCodePath.join('::')}`
-            }
-        } else if (this.result.folderFsUri) {
-            pathToRun = this.result.folderFsUri.fsPath;
-        } else {
-            // throw new Error('Can not run - no folder or file provided.');
-            vscode.window.showErrorMessage('ATest: PyTestRunner did not receive any runnable options. See the output log for more details.');
-            this.outputChannel.appendLine(`PyTestRunner can not run: ${this.result.toJson()}`);
-            return null;
-        }
         let args = [
             '-v',
             `--junit-xml=${this.workspaceFolderHelper.getTempDirectoryFilePath('tests.xml', true)}`
         ];
-        if (pathToRun) {
-            args.push(this.workspaceFolderHelper.relativeFsPath(pathToRun))
-        }
+        args.push(...this.pathsToRun);
         return {
             command: pytestPath,
             args: args

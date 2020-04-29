@@ -25,3 +25,30 @@ export class MockResultTreeItem extends ResultTreeItem {
         );
     }
 }
+
+export class MockFailedTestResultTreeItem extends ResultTreeItem {
+    constructor(name: string) {
+        super(
+            {
+                workspaceFolder: vscode.workspace!.workspaceFolders![0],
+                runnerName: 'mock',
+                container: new MockResultTreeItemContainer()
+            }, 
+            name, EResultTreeItemType.Test
+        );
+        this.failureMessage = 'Failed!';
+    }
+}
+
+export class MockPassedTestResultTreeItem extends ResultTreeItem {
+    constructor(name: string) {
+        super(
+            {
+                workspaceFolder: vscode.workspace!.workspaceFolders![0],
+                runnerName: 'mock',
+                container: new MockResultTreeItemContainer()
+            }, 
+            name, EResultTreeItemType.Test
+        );
+    }
+}
