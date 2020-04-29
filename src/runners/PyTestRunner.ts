@@ -68,7 +68,9 @@ export default class PyTestRunner extends AbstractRunner {
     }
 
     protected getOutputHandler(): AbstractOutputHandler {
-        return new XunitOutputHandler(this.result, this.outputChannel);
+        return new XunitOutputHandler(this.result, this.outputChannel, {
+            testCaseHasFileAttribute: true
+        });
     }
 
     static canRunUri(uri: vscode.Uri): boolean {

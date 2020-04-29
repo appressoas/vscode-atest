@@ -7,9 +7,11 @@ import { ResultTreeItem } from '../ResultTreeItem';
 // https://github.com/microsoft/vscode/issues/571
 export default abstract class AbstractOutputHandler {
     workspaceFolderHelper: WorkspaceFolderHelper;
+    options: {[key: string]: any};
 
-    constructor (public result: ResultTreeItem, public outputChannel: vscode.OutputChannel) {
+    constructor (public result: ResultTreeItem, public outputChannel: vscode.OutputChannel, options?: {[key: string]: any}) {
         this.workspaceFolderHelper = new WorkspaceFolderHelper(result.context.workspaceFolder);
+        this.options = options || {};
     }
 
     handleProcessStdout (data: string): void {

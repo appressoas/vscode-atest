@@ -6,6 +6,18 @@ import * as xml2js from 'xml2js';
 import { EResultTreeItemType } from '../types';
 import { ResultTreeItem } from '../ResultTreeItem';
 
+export type TXunitOutputHandlerOptions = {
+    // Does the <testcase> have a file attribute with the
+    // path to the test file which can be used to re-run the test?
+    // E.g.: src/my/module/mytests.js.
+    testCaseHasFileAttribute?: boolean;
+
+    // Is the <testsuite> name attribute the file path?
+    // E.g.: The path to the file which can be used to
+    // re-run the test? E.g: src/mymodule/mytests.js.
+    testSuiteNameIsFilePath?: boolean;
+};
+
 export default class XunitOutputHandler extends AbstractOutputHandler {
 
     get xunitOutputString(): string {
@@ -21,15 +33,30 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
     }
 
     addOrGetaddTestCaseClassElement (testCaseClassPath: string[], testCaseElement: any): ResultTreeItem {
+        const attributes = testCaseElement.$;
+        let parentPathArray = undefined;
+        if (this.options.testCaseHasFileAttribute) {
+            const fileRelativePath = attributes.file;
+            if (fileRelativePath) {
+                const fileResultItem = this.result.addChildRecursiveByFilePath(
+                    this.workspaceFolderHelper.workspaceFolder.uri.fsPath,
+                    fileRelativePath);
+                parentPathArray = fileResultItem.pathArray.slice(1);
+            } else {
+                console.warn(`testcase xunit element does not have a file attribute.`);
+            }
+        }
+
         let resultItem = this.result.getByPathArray(testCaseClassPath);
         if (!resultItem) {
-            const attributes = testCaseElement.$;
             const className = testCaseClassPath[testCaseClassPath.length - 1];
-            const parentPathArray = testCaseClassPath.slice(0, testCaseClassPath.length - 1);
             resultItem = this.result.makeResultTreeItem(className);
             resultItem.resultType = EResultTreeItemType.TestCase;
             resultItem.fileFsUri = this.workspaceFolderHelper.absoluteFsUri(attributes.file);
             resultItem.fileRelativeCodePath = [className];
+            if (!parentPathArray) {
+                parentPathArray = testCaseClassPath.slice(0, testCaseClassPath.length - 1);
+            }
             this.result.addChildRecursiveByPath(parentPathArray, resultItem, true);
         }
         return resultItem;

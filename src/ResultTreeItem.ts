@@ -281,6 +281,38 @@ export class ResultTreeItem extends vscode.TreeItem {
         }
     }
 
+    _addChildRecursiveByFilePath (rootDirectory: string, remainingFilePathArray: string[], currentFilePathArray: string[]): ResultTreeItem {
+        if (remainingFilePathArray.length === 1) {
+            const fileName = remainingFilePathArray[0];
+            const name = fileName.split('.')[0];
+            if (this.children.has(name)) {
+                return <ResultTreeItem>this.children.get(name);
+            }
+            currentFilePathArray.push(fileName);
+            const fileItem = this.makeResultTreeItem(name);
+            fileItem.resultType = EResultTreeItemType.File;
+            fileItem.fileFsUri = vscode.Uri.file(path.join(rootDirectory, currentFilePathArray.join('/')));
+            this.addOrReplaceChild(fileItem);
+            return fileItem;
+        } else {
+            const name = remainingFilePathArray[0];
+            currentFilePathArray.push(name);
+            let child = this.children.get(name);
+            if (!child) {
+                child = this.makeResultTreeItem(name);
+                child.resultType = EResultTreeItemType.Folder;
+                child.folderFsUri = vscode.Uri.file(path.join(rootDirectory, currentFilePathArray.join('/')));
+                this.addChild(child);
+            }
+            return child._addChildRecursiveByFilePath(rootDirectory, remainingFilePathArray.slice(1), currentFilePathArray);
+        }
+    }
+
+    addChildRecursiveByFilePath (rootDirectory: string, filePath: string): ResultTreeItem {
+        const filePathArray = filePath.split('/');
+        return this._addChildRecursiveByFilePath(rootDirectory, filePathArray, []);
+    }
+
     getByPathArray (pathArray: string[]): ResultTreeItem|undefined {
         if (pathArray.length === 0) {
             return this;

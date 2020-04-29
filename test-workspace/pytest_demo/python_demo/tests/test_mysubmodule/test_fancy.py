@@ -26,3 +26,8 @@ class FancyTestCase(unittest.TestCase):
 
     def test_fancy_crashes(self):
         raise Exception('Crashing ...')
+
+
+class AnotherFancyTestCase(unittest.TestCase):
+    def test_more_stuff(self):
+        self.assertEqual(1, 1)

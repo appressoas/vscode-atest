@@ -82,6 +82,30 @@ suite('ResultTreeItem Test Suite', () => {
         }
     });
 
+    test('addChildRecursiveByFilePath()', () => {
+        const root = new MockResultTreeItem('mockroot');
+        const addedFileItem = root.addChildRecursiveByFilePath('/my/project', 'a/b/mytest.py');
+
+        assert(root.children.has('a'));
+        assert.equal(root.children.get('a')!.resultType, EResultTreeItemType.Folder);
+        assert.equal(root.children.get('a')?.folderFsUri?.fsPath, '/my/project/a');
+
+        assert(root.children.get('a')?.children.has('b'));
+        assert.equal(root.children.get('a')!.children!.get('b')!.resultType, EResultTreeItemType.Folder);
+        assert.equal(root.children.get('a')?.children.get('b')?.folderFsUri?.fsPath, '/my/project/a/b');
+
+        assert(root.children.get('a')?.children.get('b')?.children.has('mytest'));
+        assert.equal(
+            root.children.get('a')?.children?.get('b')?.children.get('mytest'), 
+            addedFileItem);
+        assert.equal(
+            root.children.get('a')!.children!.get('b')!.children.get('mytest')!.resultType, 
+            EResultTreeItemType.File);
+        assert.equal(
+            root.children.get('a')?.children?.get('b')?.children.get('mytest')?.fileFsUri?.fsPath,
+            '/my/project/a/b/mytest.py');
+    });
+
     test('getByPathArray()', () => {
         const root = new MockResultTreeItem('mockroot');
         const level2 = new MockResultTreeItem('my');

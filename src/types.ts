@@ -22,6 +22,8 @@ export type TRunnerOptions = {
 
 export enum EResultTreeItemType {
     WorkspaceFolder = 'WorkspaceFolder',
+    Folder = 'Folder',
+    File = 'File',
     Generic = 'Generic',
     TestSuite = 'TestSuite',
     TestCase = 'TestCase',

@@ -6,8 +6,8 @@ import { MockResultTreeItem } from '../../mocks';
 import { EResultTreeItemType } from '../../../types';
 
 class MockXunitOutputHandlerSingleTestThatFails extends XunitOutputHandler {
-	constructor () {
-		super(new MockResultTreeItem(), vscode.window.createOutputChannel('mock'));
+	constructor (options?: {[key: string]: any}) {
+		super(new MockResultTreeItem(), vscode.window.createOutputChannel('mock'), options);
 	}
 
     get xunitOutputString(): string {
@@ -22,8 +22,8 @@ class MockXunitOutputHandlerSingleTestThatFails extends XunitOutputHandler {
 }
 
 class MockXunitOutputHandlerSingleTestThatPasses extends XunitOutputHandler {
-	constructor () {
-		super(new MockResultTreeItem(), vscode.window.createOutputChannel('mock'));
+	constructor (options?: {[key: string]: any}) {
+		super(new MockResultTreeItem(), vscode.window.createOutputChannel('mock'), options);
 	}
 
     get xunitOutputString(): string {
@@ -36,8 +36,8 @@ class MockXunitOutputHandlerSingleTestThatPasses extends XunitOutputHandler {
 }
 
 class MockXunitOutputHandlerAdvanced extends XunitOutputHandler {
-	constructor () {
-		super(new MockResultTreeItem(), vscode.window.createOutputChannel('mock'));
+	constructor (options?: {[key: string]: any}) {
+		super(new MockResultTreeItem(), vscode.window.createOutputChannel('mock'), options);
 	}
 
     get xunitOutputString(): string {
@@ -161,5 +161,34 @@ suite('XunitOutputHandler Test Suite', () => {
 			assert(!outputHandler.result.getFailedByDottedPath('test_stringutils.test_replace.TestReplace.test_strip_whitespace'));
 			assert(outputHandler.result.getFailedByDottedPath('test_stringutils.test_replace.TestReplace.test_will_fail'));
 			});
+	});
+
+	test('handleProcessDone testCaseHasFileAttribute=true', () => {
+		const outputHandler = new MockXunitOutputHandlerSingleTestThatPasses({
+			testCaseHasFileAttribute: true
+		});
+		return outputHandler.handleProcessDone().then(() => {
+			// console.log(outputHandler.result.toPlainObject());
+			assert.equal(outputHandler.result.testCount, 1);
+			assert.equal(outputHandler.result.failedTestCount, 0);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils')!.resultType,
+				EResultTreeItemType.Folder);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.test_replace')!.resultType,
+				EResultTreeItemType.File);
+			assert(outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace')!.fileFsUri!.fsPath.endsWith('test_stringutils/test_replace.py'))
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace')!.resultType, 
+				EResultTreeItemType.TestCase);
+			assert(outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace')!.fileFsUri!.fsPath.endsWith('test_stringutils/test_replace.py'))
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace.test_ok')!.resultType, 
+				EResultTreeItemType.Test);
+				assert(outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace.test_ok')!.fileFsUri!.fsPath.endsWith('test_stringutils/test_replace.py'))
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace.test_ok')!.line, 
+				10);
+		});
 	});
 });
