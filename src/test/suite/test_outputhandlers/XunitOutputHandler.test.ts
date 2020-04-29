@@ -43,7 +43,8 @@ class MockXunitOutputHandlerAdvanced extends XunitOutputHandler {
     get xunitOutputString(): string {
 		return `<testsuites>
 	<testsuite name="mytestsuite">
-		<testcase classname="test_stringutils.test_stuff.TestReplace" file="test_stringutils/test_stuff.py" line="4" name="test_do_stuff"/>
+		<testcase classname="test_other.TestOther" file="test_stringutils/test_other.py" line="4" name="test_other"/>
+		<testcase classname="test_stringutils.test_stuff.TestStuff" file="test_stringutils/test_stuff.py" line="4" name="test_do_stuff"/>
 		<testcase classname="test_stringutils.test_replace.TestReplace" file="test_stringutils/test_replace.py" line="7" name="test_strip_whitespace"/>
 		<testcase classname="test_stringutils.test_replace.TestReplace" file="test_stringutils/test_replace.py" line="10" name="test_will_fail">
 			<failure message="The failure message">Failure details</failure>
@@ -120,5 +121,45 @@ suite('XunitOutputHandler Test Suite', () => {
 				outputHandler.result.getFailedByDottedPath('test_stringutils.TestReplace.test_will_fail')!.failureMessage, 
 				'The failure message\n\nFailure details');
 		});
+	});
+
+	test('handleProcessDone advanced', () => {
+		const outputHandler = new MockXunitOutputHandlerAdvanced();
+		return outputHandler.handleProcessDone().then(() => {
+			// We only do rough checks here - details in the tests above
+			assert.equal(outputHandler.result.testCount, 4);
+			assert.equal(outputHandler.result.failedTestCount, 1);
+			assert(outputHandler.result.getByDottedPath('test_other.TestOther'));
+			assert(outputHandler.result.getByDottedPath('test_stringutils.test_stuff.TestStuff'));
+			assert(outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace'));
+			assert(outputHandler.result.getByDottedPath('test_other.TestOther.test_other'));
+			assert(outputHandler.result.getByDottedPath('test_stringutils.test_stuff.TestStuff.test_do_stuff'));
+			assert(outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace.test_strip_whitespace'));
+			assert(outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace.test_will_fail'));
+
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_other.TestOther')!.resultType,
+				EResultTreeItemType.TestCase);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.test_stuff.TestStuff')!.resultType,
+				EResultTreeItemType.TestCase);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace')!.resultType,
+				EResultTreeItemType.TestCase);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_other.TestOther.test_other')!.resultType,
+				EResultTreeItemType.Test);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.test_stuff.TestStuff.test_do_stuff')!.resultType,
+				EResultTreeItemType.Test);
+			assert.equal(
+				outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace.test_strip_whitespace')!.resultType,
+				EResultTreeItemType.Test);
+			assert.equal(outputHandler.result.getByDottedPath('test_stringutils.test_replace.TestReplace.test_will_fail')!.resultType,
+				EResultTreeItemType.Test);
+	
+			assert(!outputHandler.result.getFailedByDottedPath('test_stringutils.test_replace.TestReplace.test_strip_whitespace'));
+			assert(outputHandler.result.getFailedByDottedPath('test_stringutils.test_replace.TestReplace.test_will_fail'));
+			});
 	});
 });

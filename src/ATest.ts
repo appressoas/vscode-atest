@@ -87,7 +87,7 @@ export default class ATest {
         resultTreeItem.showTestResults().then(() => {});
     }
 
-    resetCache () {
+    clearTestOutputList () {
         this.testResultsProvider.clear();
     }
 }

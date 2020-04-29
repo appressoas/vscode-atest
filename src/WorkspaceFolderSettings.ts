@@ -50,10 +50,10 @@ export default class WorkspaceFolderSettings {
                 if (runnerClass.canRunUri(uri)) {
                     runnerNames.push(runnerName);
                 } else {
-                    console.log(`Skipping "runnerName" - can not run ${uri.toString()}`);
+                    console.log(`Skipping "${runnerName}" - can not run ${uri.toString()}`);
                 }
             } else {
-                console.log('Skipping "runnerName" - not in atest.runners setting');
+                console.log(`Skipping "${runnerName}" - not in atest.runners setting`);
             }
         }
         return runnerNames;

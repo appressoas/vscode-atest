@@ -107,6 +107,9 @@ export default abstract class AbstractRunner {
                         hasResolved = true;
                         this.result.setIsRunningTests(false);
                         resolve(null);
+                    }).catch((error) => {
+                        this.result.setIsRunningTests(false);
+                        reject(error);
                     });
                 } else {
                     console.warn(`${this.description}. Exit code: ${code}.`);
@@ -116,6 +119,9 @@ export default abstract class AbstractRunner {
                         hasResolved = true;
                         this.result.setIsRunningTests(false);
                         resolve(null);
+                    }).catch((error) => {
+                        this.result.setIsRunningTests(false);
+                        reject(error);
                     });
                 }
             });

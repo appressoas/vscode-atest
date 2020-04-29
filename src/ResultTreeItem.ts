@@ -236,7 +236,7 @@ export class ResultTreeItem extends vscode.TreeItem {
         }
     }
 
-    addChildRecursiveByPath (parentPathArray: string[], resultTreeItem: ResultTreeItem) {
+    addChildRecursiveByPath (parentPathArray: string[], resultTreeItem: ResultTreeItem, skipExisting: boolean = false) {
         if (!resultTreeItem.name) {
             throw new Error('addOrReplace requires resultTreeItem with name.')
         }
@@ -244,12 +244,16 @@ export class ResultTreeItem extends vscode.TreeItem {
             this.addOrReplaceChild(resultTreeItem);
         } else {
             const name = parentPathArray[0];
-            if (this.children.has(name)) {
-                throw new Error(`${this.dottedPath} already has a ${name} child.`);
+            let child = this.children.get(name);
+            if (child) {
+                if (!skipExisting) {
+                    throw new Error(`${this.dottedPath} already has a ${name} child.`);
+                }
+            } else {
+                child = this.makeResultTreeItem(name);
+                this.addChild(child);
             }
-            const newChild = this.makeResultTreeItem(name);
-            this.addChild(newChild);
-            newChild.addChildRecursiveByPath(parentPathArray.slice(1), resultTreeItem);
+            child.addChildRecursiveByPath(parentPathArray.slice(1), resultTreeItem, skipExisting);
         }
     }
 
@@ -268,6 +272,28 @@ export class ResultTreeItem extends vscode.TreeItem {
         }
     }
 
+    _getClosestExistingParentPathArray (pathArray: string[], resultArray: string[], add: boolean = true) {
+        if (pathArray.length === 0) {
+            return;
+        }
+        else {
+            if (add) {
+                resultArray.push(this.name);
+            }
+            const name = pathArray[0];
+            const child = this.children.get(name);
+            if (child) {
+                child._getClosestExistingParentPathArray(pathArray.slice(1), resultArray);
+            }
+        }
+    }
+
+    getClosestExistingParentPathArray (pathArray: string[]): string[] {
+        const resultArray: string[] = [];
+        this._getClosestExistingParentPathArray(pathArray, resultArray, false);
+        return resultArray;
+    }
+
     getByDottedPath (dottedPath: string): ResultTreeItem|undefined {
         if (dottedPath === '') {
             return undefined;
@@ -283,7 +309,7 @@ export class ResultTreeItem extends vscode.TreeItem {
             const name = pathArray[0];
             const child = this.failedChildren.get(name);
             if (child) {
-                return child.getByPathArray(pathArray.slice(1));
+                return child.getFailedByPathArray(pathArray.slice(1));
             } else {
                 return undefined;
             }

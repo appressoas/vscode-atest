@@ -30,7 +30,7 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
             resultItem.resultType = EResultTreeItemType.TestCase;
             resultItem.fileFsUri = this.workspaceFolderHelper.absoluteFsUri(attributes.file);
             resultItem.fileRelativeCodePath = [className];
-            this.result.addChildRecursiveByPath(parentPathArray, resultItem);
+            this.result.addChildRecursiveByPath(parentPathArray, resultItem, true);
         }
         return resultItem;
     } 

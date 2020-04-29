@@ -10,8 +10,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let atest = new ATest();
 
-	context.subscriptions.push(vscode.commands.registerCommand('atest.resetCache', () => {
-		atest.resetCache();
+	context.subscriptions.push(vscode.commands.registerCommand('atest.clearTestOutputList', () => {
+		atest.clearTestOutputList();
 	}));
 
 	// context.subscriptions.push(vscode.commands.registerCommand('atest.runTestAtCursor', () => {

@@ -60,6 +60,29 @@ suite('ResultTreeItem Test Suite', () => {
             EResultTreeItemType.Test);
     });
 
+    test('addChildRecursiveByPath() skipExisting false', () => {
+        const root = new MockResultTreeItem('mockroot');
+        const itemToAdd = new MockResultTreeItem('c');
+        itemToAdd.resultType = EResultTreeItemType.Test;
+        root.addChild(new MockResultTreeItem('a'));
+        try {
+            root.addChildRecursiveByPath(['a'], itemToAdd);
+            assert.fail('Should not be allowed to add "a" when it already exists skipExisting=false.')
+        } catch (error) {}
+    });
+
+    test('addChildRecursiveByPath() skipExisting true', () => {
+        const root = new MockResultTreeItem('mockroot');
+        const itemToAdd = new MockResultTreeItem('c');
+        itemToAdd.resultType = EResultTreeItemType.Test;
+        root.addChild(new MockResultTreeItem('a'));
+        try {
+            root.addChildRecursiveByPath(['a'], itemToAdd, true);
+        } catch (error) {
+            assert.fail('Should be allowed to add "a" when it already exists because skipExisting=true.')
+        }
+    });
+
     test('getByPathArray()', () => {
         const root = new MockResultTreeItem('mockroot');
         const level2 = new MockResultTreeItem('my');
@@ -78,5 +101,21 @@ suite('ResultTreeItem Test Suite', () => {
         level2.addChild(level3);
         assert.equal(root.getByDottedPath('my.test'), level3);
         assert.equal(root.getByDottedPath('my.other'), undefined);
+    });
+
+    test('getClosestExistingParentPathArray()', () => {
+        const root = new MockResultTreeItem('mockroot');
+        const level2 = new MockResultTreeItem('my');
+        root.addChild(level2);
+        const level3 = new MockResultTreeItem('fancy');
+        level2.addChild(level3);
+        const level4 = new MockResultTreeItem('test');
+        level3.addChild(level4);
+        assert.equal(root.getClosestExistingParentPathArray(['my', 'fancy']).join('.'), 'my');
+        assert.equal(root.getClosestExistingParentPathArray(['my', 'other']).join('.'), 'my');
+        assert.equal(root.getClosestExistingParentPathArray(['my', 'fancy', 'test']).join('.'), 'my.fancy');
+        assert.equal(root.getClosestExistingParentPathArray(['my', 'fancy', 'other']).join('.'), 'my.fancy');
+        assert.equal(root.getClosestExistingParentPathArray(['my', 'fancy', 'test', 'a']).join('.'), 'my.fancy.test');
+        assert.equal(root.getClosestExistingParentPathArray(['my', 'fancy', 'test', 'a', 'b', 'c', 'd']).join('.'), 'my.fancy.test');
     });
 });

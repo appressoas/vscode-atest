@@ -23,7 +23,7 @@
         "onCommand:atest.runTestsInCurrentFile",
         "onCommand:atest.runTestsInFolder",
         "onCommand:atest.runTestsInFile",
-        "onCommand:atest.resetCache"
+        "onCommand:atest.clearTestOutputList"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -41,8 +41,8 @@
                 "title": "ATest: Run all tests in file"
             },
             {
-                "command": "atest.resetCache",
-                "title": "ATest: Reset test output cache"
+                "command": "atest.clearTestOutputList",
+                "title": "ATest: Clear test output list"
             },
             {
                 "command": "atest.testResultsShowSingleTest",
