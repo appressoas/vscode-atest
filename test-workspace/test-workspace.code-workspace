@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "./pytest_demo"
+		},
+		{
+			"path": "./jest_demo"
+		}
+	]
+}

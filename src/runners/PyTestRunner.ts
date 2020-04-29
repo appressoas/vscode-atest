@@ -49,11 +49,13 @@ export default class PyTestRunner extends AbstractRunner {
     protected getExecutable(): TExecutable|null {
         let pythonPath: string|undefined = vscode.workspace.getConfiguration('python', this.workspaceFolder).get('pythonPath');
         if (!pythonPath) {
+            vscode.window.showErrorMessage('No python.pythonPath configured.')
             return null;
         }
         pythonPath = expandHomeDir(pythonPath);
         const pythonBinPath = path.dirname(<string>pythonPath);
         const pytestPath = path.join(pythonBinPath, 'pytest')
+        this.outputChannel.appendLine(`PyTestRunner using the following path for pytest: ${pytestPath}`)
         let args = [
             '-v',
             `--junit-xml=${this.workspaceFolderHelper.getTempDirectoryFilePath('tests.xml', true)}`

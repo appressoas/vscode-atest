@@ -157,8 +157,8 @@
             "properties": {
                 "atest.runners": {
                     "scope": "resource",
-                    "type": "array",
-                    "default": [],
+                    "type": "object",
+                    "default": {},
                     "description": "The test runners to enable. Each item is an object with at least a \"name\" key. Other options vary from runner to runner."
                 }
             }

@@ -95,11 +95,6 @@ export default class XunitOutputHandler extends AbstractOutputHandler {
             }
             this.result.optimize();
             this.result.refresh();
-            // this.result.rootItem.optimize();
-            // this.result.rootItem.refresh();
-            // console.log('PLAIN result', this.result.toJson());
-            // console.log('PLAIN rootItem', this.result.rootItem.toJson());
-            // this.result.optimize();
         });
     }
 }

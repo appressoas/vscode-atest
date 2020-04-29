@@ -11,7 +11,6 @@ export default class ATest {
     }
 
     private _runTestsAtUri (uri: vscode.Uri, setOptions: (resultTreeItem: ResultTreeItem) => void) {
-        vscode.window.showInformationMessage(`running tests in ${uri.fsPath}`);
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
         if (!workspaceFolder) {
             vscode.window.showErrorMessage(`ATest: Could not find workspace folder for ${uri.fsPath}.`);
@@ -66,7 +65,6 @@ export default class ATest {
     }
 
     testResultsReRunSingleTest (resultTreeItem: ResultTreeItem) {
-        // vscode.window.showInformationMessage('testResultsReRunSingleTest - not implemented yet.');
         resultTreeItem.reRun();
     }
 
@@ -83,7 +81,6 @@ export default class ATest {
     }
 
     testResultsShowTestSetFailureMessages (resultTreeItem: ResultTreeItem) {
-        // vscode.window.showInformationMessage('testResultsShowTestSetFailureMessages - not implemented yet.');
         resultTreeItem.showTestResults().then(() => {});
     }
 

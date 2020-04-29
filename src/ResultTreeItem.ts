@@ -528,5 +528,6 @@ export class ResultTreeItem extends vscode.TreeItem {
 export class WorkspaceFolderResultTreeItem extends ResultTreeItem {
     constructor(context: TResultTreeItemContext) {
         super(context, `${context.workspaceFolder.name}:${context.runnerName}`, EResultTreeItemType.WorkspaceFolder);
+        this.folderFsUri = context.workspaceFolder.uri;
     }
 }

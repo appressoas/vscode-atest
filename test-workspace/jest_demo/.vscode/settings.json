@@ -1,0 +1,7 @@
+{
+    // "atest.runners": {
+    //     "pytest": true
+    // }
+    // "atest.genericCommand": "/Users/espenak/.virtualenvs/test-workspace-iZ82L6SF/bin/pytest",
+    // "atest.genericCommandArgs": ["--junit-xml=tests.xml"]
+}
