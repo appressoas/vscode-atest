@@ -15,9 +15,14 @@ export type TResultTreeItemContext = {
 }
 
 const OUTPUT_LOG_NAME = 'ATest: Test output';
+let _output_channel: vscode.OutputChannel|null = null;
 
 function getOutputLogChannel() {
-    return vscode.window.createOutputChannel(OUTPUT_LOG_NAME);
+    if (_output_channel) {
+        _output_channel.dispose();
+    }
+    _output_channel = vscode.window.createOutputChannel(OUTPUT_LOG_NAME);
+    return _output_channel;
 }
 
 export class ResultTreeItem extends vscode.TreeItem {
@@ -113,9 +118,9 @@ export class ResultTreeItem extends vscode.TreeItem {
         return this.rootItem._isRunningTests;
     }
 
-    run (runnerOptions?: TRunnerOptions): Promise<any> {
+    run (outputChannel: vscode.OutputChannel, runnerOptions?: TRunnerOptions): Promise<any> {
         const runnerClass = RUNNER_REGISTRY.getRunnerClass(this.context.runnerName);
-        return new runnerClass(this, runnerOptions).run();
+        return new runnerClass(this, outputChannel, runnerOptions).run();
     }
 
     makeReRunnableResultTreeItem (): WorkspaceFolderResultTreeItem {
@@ -564,8 +569,8 @@ export class ResultTreeItem extends vscode.TreeItem {
     async showTestResults () {
         const outputChannel = getOutputLogChannel();
         outputChannel.clear();
-        outputChannel.show();
         this.logTestResult(outputChannel, !this.isTest);
+        outputChannel.show(true);
     }
 
     async show () {

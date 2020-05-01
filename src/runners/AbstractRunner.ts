@@ -20,10 +20,12 @@ export default abstract class AbstractRunner {
     workspaceFolderHelper: WorkspaceFolderHelper;
     options: TRunnerOptions;
 
-    constructor (public result: ResultTreeItem, options?: TRunnerOptions) {
+    constructor (public result: ResultTreeItem, outputChannel: vscode.OutputChannel, options?: TRunnerOptions) {
         this.options = options || {};
         this.workspaceFolderHelper = new WorkspaceFolderHelper(result.context.workspaceFolder);
-        this.outputChannel = vscode.window.createOutputChannel(this.outputChannelName);
+        this.outputChannel = outputChannel;
+        this.outputChannel.clear();
+        this.outputChannel.show(true);
         this.executable = this.getExecutable();
         this.executableOptions = this.makeExecutableOptions();
         this.description = this.makeDescription();
@@ -64,14 +66,6 @@ export default abstract class AbstractRunner {
         return `${this.executable.command} args=${prettyArgs}, options: ${prettyOptions}`
     }
 
-    get outputChannelNameSuffix (): string {
-        return this.executable?.command || 'NO TEST COMMAND'
-    }
-
-    get outputChannelName () {
-        return `ATest[${this.workspaceFolder.name}] ${this.outputChannelNameSuffix}`;
-    }
-
     run (): Promise<any> {
         this.result.setIsRunningTests(true);
         return new Promise((resolve, reject) => {
@@ -79,9 +73,7 @@ export default abstract class AbstractRunner {
                 reject(new Error('No test runner executable provided'));
                 return;
             }
-            this.outputChannel.clear();
             this.outputChannel.appendLine(`Running: ${this.description}`);
-            this.outputChannel.show();
 
             const outputHandler = this.getOutputHandler();
             let hasResolved = false;

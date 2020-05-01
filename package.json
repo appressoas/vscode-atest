@@ -7,7 +7,7 @@
         "type": "git",
         "url": "https://github.com/appressoas/atest"
     },
-    "version": "1.0.0",
+    "version": "1.0.3",
     "engines": {
         "vscode": "^1.43.0"
     },
@@ -34,7 +34,7 @@
             },
             {
                 "command": "atest.runTestsInFolder",
-                "title": "ATest: Run all tests in directory"
+                "title": "ATest: Run all tests in folder"
             },
             {
                 "command": "atest.runTestsInFile",
@@ -172,7 +172,7 @@
                     "scope": "resource",
                     "type": "object",
                     "default": {},
-                    "description": "The test runners to enable. Each item is an object with at least a \"name\" key. Other options vary from runner to runner."
+                    "description": "The test runners to enable as an object. Maps the runner name to options. Refer to the README for the extension for more details."
                 }
             }
         }

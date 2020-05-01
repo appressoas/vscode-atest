@@ -11,9 +11,11 @@ export class TestResultsProvider implements vscode.TreeDataProvider<ResultTreeIt
     workspaceFolderResultTreeItemMap: Map<string, WorkspaceFolderResultTreeItem>;
     treeView: vscode.TreeView<ResultTreeItem>;
     showPassedTests: boolean;
+    outputChannelMap: Map<string, vscode.OutputChannel>;
 
     constructor () {
         this.workspaceFolderResultTreeItemMap = new Map<string, WorkspaceFolderResultTreeItem>();
+        this.outputChannelMap = new Map<string, vscode.OutputChannel>();
         this.showPassedTests = false;
         this.treeView = vscode.window.createTreeView('aTestTestResults', {
             treeDataProvider: this
@@ -58,9 +60,20 @@ export class TestResultsProvider implements vscode.TreeDataProvider<ResultTreeIt
         return true;
     }
 
+    getOuputChannel (resultItem: WorkspaceFolderResultTreeItem): vscode.OutputChannel {
+        const key = `${resultItem.context.workspaceFolder.name}:${resultItem.context.runnerName}`;
+        let outputChannel = this.outputChannelMap.get(key);
+        if (!outputChannel) {
+            const name = `ATest[${resultItem.context.workspaceFolder.name}] ${resultItem.context.runnerName}`;
+            outputChannel = vscode.window.createOutputChannel(name);
+            this.outputChannelMap.set(key, outputChannel);
+        }
+        return outputChannel;
+    }
+
     runWorkspaceFolderResultTreeItem (resultTreeItem: WorkspaceFolderResultTreeItem, runnerOptions?: TRunnerOptions) {
         if (this.setWorkspaceFolderResultTreeItem(resultTreeItem)) {
-            resultTreeItem.run(runnerOptions)
+            resultTreeItem.run(this.getOuputChannel(resultTreeItem), runnerOptions)
                 .then(() => {})
                 .catch((error: Error) => {
                     vscode.window.showErrorMessage(`Test run failed: ${error.message}`);
