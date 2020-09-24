@@ -57,7 +57,7 @@ export default class PyTestRunner extends AbstractRunner {
         const pytestPath = path.join(pythonBinPath, 'pytest')
         this.outputChannel.appendLine(`PyTestRunner using the following path for pytest: ${pytestPath}`)
         let args = [
-            '-v',
+            '-v', '-s',
             `--junit-xml=${this.workspaceFolderHelper.getTempDirectoryFilePath('tests.xml', true)}`
         ];
         args.push(...this.pathsToRun);

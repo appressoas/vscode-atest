@@ -3,6 +3,9 @@ from ...mysubmodule import hello
 
 class HelloTestCase(unittest.TestCase):
     def test_hello(self):
+        print('*' * 70)
+        print('* Some stdout output from HelloTestCase.test_hello!')
+        print('*' * 70)
         self.assertEqual(hello.hello(), 'Hello')
 
     def test_hello_wrong(self):
