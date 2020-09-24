@@ -51,4 +51,7 @@ Internal release that is usable for running tests with pytest, and the framework
 Internal release - fixes for output channels.
 
 ### 1.0.4
+Messed up versioning - skipped version.
+
+### 1.0.5
 Use -s option for pytest - removes the need to have a test crash to see the STDOUT output for the test.
