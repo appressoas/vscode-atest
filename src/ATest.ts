@@ -48,6 +48,32 @@ export default class ATest {
         });
     }
 
+    runClosestTestMethod () {
+        const currentFileUri = vscode.window.activeTextEditor?.document.uri;
+        if (!currentFileUri) {
+            vscode.window.showErrorMessage(`ATest: Could not find current file URI.`);
+            return;
+        }
+        this._runTestsAtUri(currentFileUri, (resultTreeItem: ResultTreeItem) => {
+            resultTreeItem.fileFsUri = currentFileUri;
+            resultTreeItem.line = vscode.window.activeTextEditor?.selection.active.line;
+            resultTreeItem.runMode = 'closestMethod';
+        });
+    }
+
+    runClosestTestClass () {
+        const currentFileUri = vscode.window.activeTextEditor?.document.uri;
+        if (!currentFileUri) {
+            vscode.window.showErrorMessage(`ATest: Could not find current file URI.`);
+            return;
+        }
+        this._runTestsAtUri(currentFileUri, (resultTreeItem: ResultTreeItem) => {
+            resultTreeItem.fileFsUri = currentFileUri;
+            resultTreeItem.line = vscode.window.activeTextEditor?.selection.active.line;
+            resultTreeItem.runMode = 'closestClass';
+        });
+    }
+
     runTestsInFolder (folderUri: vscode.Uri) {
         this._runTestsAtUri(folderUri, (resultTreeItem: ResultTreeItem) => {
             resultTreeItem.folderFsUri = folderUri;

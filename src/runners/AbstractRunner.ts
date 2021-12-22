@@ -120,6 +120,17 @@ export default abstract class AbstractRunner {
                     });
                 }
             });
+
+            childProcess.on('error', (error) => {
+                outputHandler.handleProcessDone(true).then(() => {
+                    hasResolved = true;
+                    this.result.setIsRunningTests(false);
+                    reject(error);
+                }).catch((error) => {
+                    this.result.setIsRunningTests(false);
+                    reject(error);
+                });            
+            })
         });
     }
 }

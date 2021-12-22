@@ -21,6 +21,13 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('atest.runTestsInCurrentFile', () => {
 		atest.runTestsInCurrentFile();
 	}));
+	context.subscriptions.push(vscode.commands.registerCommand('atest.runClosestTestMethod', () => {
+		atest.runClosestTestMethod();
+	}));
+	context.subscriptions.push(vscode.commands.registerCommand('atest.runClosestTestClass', () => {
+		atest.runClosestTestClass();
+	}));
+
 	context.subscriptions.push(vscode.commands.registerCommand('atest.runTestsInFolder', (folderUri: vscode.Uri) => {
 		atest.runTestsInFolder(folderUri);
 	}));

@@ -1,3 +1,4 @@
+// @ts-nocheck 
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { EResultTreeItemType, EResultTreeItemStatus, TRunnerOptions } from './types';
@@ -52,6 +53,9 @@ export class ResultTreeItem extends vscode.TreeItem {
     
     // Line number in ``fileFsPath`` where the test is located.
     line?: number;
+
+    // Run mode. If this is not null, it must be "closestMethod" or "closestClass".
+    runMode?: string;
 
     name: string;
     fullCodePath?: string[];
