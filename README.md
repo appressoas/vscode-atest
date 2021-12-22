@@ -61,3 +61,6 @@ Use -s option for pytest - removes the need to have a test crash to see the STDO
 ### 1.1.1
 - Add support for running closest test method and closest test class/suite in the open file (relative to cursor position).
 - Some error handling improvements.
+
+### 1.1.1
+- Fix repository URL in package.json.
