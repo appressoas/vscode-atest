@@ -23,6 +23,8 @@
         "onCommand:atest.runTestsInCurrentFile",
         "onCommand:atest.runTestsInFolder",
         "onCommand:atest.runTestsInFile",
+        "onCommand:atest.runClosestTestMethod",
+        "onCommand:atest.runClosestTestClass",
         "onCommand:atest.clearTestOutputList"
     ],
     "main": "./out/extension.js",
@@ -39,6 +41,14 @@
             {
                 "command": "atest.runTestsInFile",
                 "title": "ATest: Run all tests in file"
+            },
+            {
+                "command": "atest.runClosestTestMethod",
+                "title": "ATest: Run closest test method/function"
+            },
+            {
+                "command": "atest.runClosestTestClass",
+                "title": "ATest: Run closest test class/suite"
             },
             {
                 "command": "atest.clearTestOutputList",
@@ -192,8 +202,8 @@
         "@types/vscode": "^1.43.0",
         "@typescript-eslint/eslint-plugin": "^2.26.0",
         "@typescript-eslint/parser": "^2.26.0",
-        "electron": "7.1.11",
-        "electron-rebuild": "^1.10.1",
+        "electron": "12.0.9",
+        "electron-rebuild": "^3.2.5",
         "eslint": "^6.8.0",
         "glob": "^7.1.6",
         "mocha": "^7.1.1",
@@ -202,8 +212,6 @@
     },
     "dependencies": {
         "expand-home-dir": "^0.0.3",
-        "tree-sitter": "^0.16.1",
-        "tree-sitter-python": "^0.16.1",
         "xml2js": "^0.4.23"
     }
 }

@@ -8,3 +8,4 @@ notes.md
 __pycache__/
 *.vsix
 .vscode-atest-temp/
+test-workspace/pytest_demo/venv/

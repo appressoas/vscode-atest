@@ -22,8 +22,8 @@ VSCode is using (just do not commit this).
 
 Then run:
 ```
-$ yarn
-$ yarn electron-rebuild
+$ npm
+$ node_modules/.bin/electron-rebuild
 ```
 to install and rebuild modules with the correct electron and nodejs version.
 
