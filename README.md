@@ -29,6 +29,8 @@ Configuration (in settings.json):
 The actual command is within `[]` below - useful if you want to setup keybindings.
 
 - **ATest: Run tests in current file** `[atest.runTestsInCurrentFile]`: Run the tests in the current file.
+- **ATest: Run closest test method/function** `[atest.runClosestTestMethod]`: Run the closest test method in the current file.
+- **ATest: Run closest test class/suite** `[atest.runClosestTestClass]`: Run the closest test class/suite in the current file.
 - **ATest: Clear test output list** `[atest.clearTestOutputList]`: Clear the test results list in the tests view/panel.
 
 
@@ -55,3 +57,7 @@ Messed up versioning - skipped version.
 
 ### 1.0.5
 Use -s option for pytest - removes the need to have a test crash to see the STDOUT output for the test.
+
+### 1.1.1
+- Add support for running closest test method and closest test class/suite in the open file (relative to cursor position).
+- Some error handling improvements.

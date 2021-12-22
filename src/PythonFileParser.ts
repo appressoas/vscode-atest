@@ -13,8 +13,6 @@ export default class PythonFileParser {
     constructor (fileFsUri: vscode.Uri, lineNumber: number) {
         this.fileFsUri = fileFsUri;
         this.lineNumber = lineNumber;
-        console.log('PARSE:', this.fileFsUri.fsPath);
-        console.log('PARSE TO LINE:', this.lineNumber);
         this.parse();
     }
 
@@ -22,19 +20,16 @@ export default class PythonFileParser {
         const fileLines = readFileSync(this.fileFsUri.fsPath, 'utf-8').split(/\r?\n/);
         let lineNumber = 0;
         for (const line of fileLines) {
-            console.log(`LINE[${lineNumber}]:`, line);
             if (!line.trim().startsWith('#')) {
                 const classMatch = line.match(CLASS_REGEX);
                 if (classMatch && line.toLocaleLowerCase().indexOf('test') !== -1) {
                     this.closestTestClassName = classMatch[2];
-                    console.log('CLASS MATCH:', classMatch[2]);
                 }
                 if (this.closestTestClassName) {
                     // We must have found a test class to even try to match a test method.
                     const methodMatch = line.match(METHOD_REGEX);
                     if (methodMatch) {
                         this.closestTestMethodName = methodMatch[2];
-                        console.log('METHOD MATCH:', methodMatch[2]);
                     }
                 }
                 if (lineNumber >= this.lineNumber && this.closestTestClassName && this.closestTestMethodName) {
